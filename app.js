@@ -133,6 +133,52 @@ $newCylinderButton.addEventListener("click", () => {
     console.log("New cylinder");
 });
 
+document.addEventListener('keydown', e => {
+    const keyName = e.key;
+    console.log(keyName);
+    switch (keyName.toUpperCase()) {
+        case "1":
+            // topView();
+            break;
+        case "2":
+            // sideView();
+            break;
+        case "3":
+            // frontView():
+            break;
+        case "0":
+            // customView();
+            break;
+        case "W":
+            // goForwards();
+            break;
+        case "S":
+            // goBackwards()
+            break;
+        case "A":
+            // steerLeft();
+            break;
+        case "D":
+            // steerRight();
+            break;
+        case "I":
+            // liftArm();
+            break;
+        case "K":
+            // lowerArm();
+            break;
+        case "J":
+            // rotateArmLeft();
+            break;
+        case "L":
+            // rotateArmRight();
+            break;
+        default:
+            console.error("Unrecognized key");
+            break;
+    }
+});
+
 window.onload = function init() {
     var canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
