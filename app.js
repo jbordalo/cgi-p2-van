@@ -135,43 +135,59 @@ $newCylinderButton.addEventListener("click", () => {
 
 document.addEventListener('keydown', e => {
     const keyName = e.key;
-    console.log(keyName);
+    // console.log(keyName);
     switch (keyName.toUpperCase()) {
         case "1":
             // topView();
+            console.log("Top view");
             break;
         case "2":
             // sideView();
+            console.log("Side view");
             break;
         case "3":
             // frontView():
+            console.log("Front view");
             break;
         case "0":
             // customView();
+            console.log("Custom view");
+            break;
+        case " ":
+            // changeColors();
+            console.log("Color change");
             break;
         case "W":
             // goForwards();
+            console.log("Move forwards");
             break;
         case "S":
-            // goBackwards()
+            // goBackwards();
+            console.log("Move backwards");
             break;
         case "A":
             // steerLeft();
+            console.log("Steer left");
             break;
         case "D":
             // steerRight();
+            console.log("Steer right");
             break;
         case "I":
             // liftArm();
+            console.log("Lift arm");
             break;
         case "K":
             // lowerArm();
+            console.log("Lower arm");
             break;
         case "J":
             // rotateArmLeft();
+            console.log("Rotate arm left");
             break;
         case "L":
             // rotateArmRight();
+            console.log("Rotate arm right");
             break;
         default:
             console.error("Unrecognized key");
