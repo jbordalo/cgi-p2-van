@@ -8,16 +8,16 @@
       varying vec4 fNormal;
 
       uniform mat4 mProjection;
-      uniform mat4 mView;
-      uniform mat4 mModel;
+      uniform mat4 mModelView;
 
       void main(){
-        gl_Position = mProjection * mView * mModel * vPosition;
+        gl_Position = mProjection * mModelView * vPosition;
         fNormal = vNormal;
       }
     </script>
+
   <script id="fragment-shader" type="x-shader/x-fragment">
-      precision mediump float;
+      precision highp float;
       varying vec4 fNormal;
       void main() {
           gl_FragColor = abs(fNormal);

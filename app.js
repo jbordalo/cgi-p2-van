@@ -2,19 +2,54 @@
 var gl;
 let program;
 
+let time = 0;
+
 const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
+const WIREFRAME = 0;
+const FULL = 1;
 
-let instances = [];
-let objectInfo = [];
+let currentMode = WIREFRAME;
 let currentShape = CUBE;
+let currentForward = 0;
 let tx = 0.0, ty = 0.0, tz = 0.0;
 let xr = 0.0, yr = 0.0, zr = 0.0;
 let sx = 1.0, sy = 1.0, sz = 1.0;
-let mModelLoc, mProjectionLoc, mViewLoc;
+let mProjectionLoc, mModelViewLoc;
 
-let mModel, mProjection, mView;
+let mProjection, modelView;
+
+var matrixStack = [];
+
+// Stack related operations
+function pushMatrix() {
+    var m = mat4(modelView[0], modelView[1],
+        modelView[2], modelView[3]);
+    matrixStack.push(m);
+}
+function popMatrix() {
+    modelView = matrixStack.pop();
+}
+// Append transformations to modelView
+function multMatrix(m) {
+    modelView = mult(modelView, m);
+}
+function multTranslation(t) {
+    modelView = mult(modelView, translate(t));
+}
+function multScale(s) {
+    modelView = mult(modelView, scalem(s));
+}
+function multRotationX(angle) {
+    modelView = mult(modelView, rotateX(angle));
+}
+function multRotationY(angle) {
+    modelView = mult(modelView, rotateY(angle));
+}
+function multRotationZ(angle) {
+    modelView = mult(modelView, rotateZ(angle));
+}
 
 let $txSlider = document.getElementById("tx-slider");
 let $tySlider = document.getElementById("ty-slider");
@@ -133,6 +168,8 @@ $newCylinderButton.addEventListener("click", () => {
     console.log("New cylinder");
 });
 
+
+
 document.addEventListener('keydown', e => {
     const keyName = e.key;
     // console.log(keyName);
@@ -159,10 +196,12 @@ document.addEventListener('keydown', e => {
             break;
         case "W":
             // goForwards();
+            currentForward += 0.1;
             console.log("Move forwards");
             break;
         case "S":
             // goBackwards();
+            currentForward -= 0.1;
             console.log("Move backwards");
             break;
         case "A":
@@ -200,12 +239,12 @@ window.onload = function init() {
     gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) { alert("WebGL isn't available"); }
 
-    var at = [0, 0, 0];
-    var eye = [1, 1, 1];
-    var up = [0, 1, 0];
+    // var at = [0, 0, 0];
+    // var eye = [1, 1, 1];
+    // var up = [0, 1, 0];
 
-    mView = lookAt(eye, at, up);
-    mProjection = ortho(-2, 2, -2, 2, 10, -10);
+    // mView = lookAt(eye, at, up);
+    // mProjection = ortho(-2, 2, -2, 2, 10, -10);
 
     // Configure WebGL
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -219,54 +258,141 @@ window.onload = function init() {
     sphereInit(gl);
     cylinderInit(gl);
 
-    mModelLoc = gl.getUniformLocation(program, "mModel");
-    mViewLoc = gl.getUniformLocation(program, 'mView');
+    mModelViewLoc = gl.getUniformLocation(program, 'mModelView');
     mProjectionLoc = gl.getUniformLocation(program, 'mProjection');
 
-    gl.uniformMatrix4fv(mViewLoc, false, flatten(mView));
-    gl.uniformMatrix4fv(mProjectionLoc, false, flatten(mProjection));
+    // gl.uniformMatrix4fv(mProjectionLoc, false, flatten(mProjection));
 
-    generateMModel();
     render();
 }
 
-function generateMModel() {
-    let mT = translate([tx, ty, tz]);
-    let mR = mult(rotateZ(zr), mult(rotateY(yr), rotateX(xr)));
-    let mS = scalem([sx, sy, sz]);
-    mModel = mult(mult(mT, mR), mS);
-}
+function drawPrimitive(shape, mode) {
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 
-function drawShape(currentInstance, currentShape) {
-    gl.uniformMatrix4fv(mModelLoc, false, flatten(currentInstance));
-
-    switch (currentShape) {
+    switch (shape) {
         case CUBE:
-            cubeDrawWireFrame(gl, program);
+            if (mode == WIREFRAME) {
+                cubeDrawWireFrame(gl, program);
+            } else {
+                cubeDrawFilled(gl, program);
+            }
             break;
         case SPHERE:
-            sphereDrawWireFrame(gl, program);
+            if (mode == WIREFRAME) {
+                sphereDrawWireFrame(gl, program);
+            } else {
+                sphereDrawFilled(gl, program);
+            }
             break;
         case CYLINDER:
-            cylinderDrawWireFrame(gl, program);
+            if (mode == WIREFRAME) {
+                cylinderDrawWireFrame(gl, program);
+            } else {
+                cylinderDrawFilled(gl, program);
+            }
             break;
         default:
             break;
     }
 }
 
+function Chassis() {
+    multRotationX(90);
+    multScale([.8, 2, .8]);
+    drawPrimitive(CUBE, currentMode);
+
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Front() {
+    multRotationX(90);
+    multScale([.7, .5, .5]);
+    drawPrimitive(CUBE, currentMode);
+
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Wheel() {
+    multScale([.5, .1, .5]);
+    drawPrimitive(CYLINDER, currentMode);
+
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Axle() {
+    multScale([.1, 1, .1]);
+    drawPrimitive(CYLINDER, currentMode);
+
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function sceneGraph() {
+    pushMatrix();
+    Chassis();
+    popMatrix();
+    pushMatrix();
+    multTranslation([0, -.15, 1.25]);
+    Front();
+    popMatrix();
+    pushMatrix();
+    multTranslation([0, 0, 2]);
+    pushMatrix();
+    multTranslation([-0.15, -.15, -2.4]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Wheel();
+    popMatrix();
+    pushMatrix();
+    multTranslation([.65, -.15, -2.4]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Wheel();
+    popMatrix();
+    pushMatrix();
+    multTranslation([.65, -.15, -1.2]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Wheel();
+    popMatrix();
+    pushMatrix();
+    multTranslation([-.15, -.15, -1.2]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Wheel();
+    popMatrix();
+    pushMatrix();
+    multTranslation([.25, -.15, -2.4]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Axle();
+    popMatrix();
+    pushMatrix();
+    multTranslation([.25, -.15, -1.2]);
+    multRotationZ(90);
+    multRotationY(-time);
+    Axle();
+    popMatrix();
+    popMatrix();
+
+}
+
 function render() {
-    generateMModel();
+    time += 1;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniformMatrix4fv(mModelLoc, false, flatten(mModel));
+    var projection = ortho(-2, 2, -2, 2, 10, -10);
 
-    drawShape(mModel, currentShape);
+    gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
-    for (let i = 0; i < instances.length; i++) {
-        console.log("Drawing instance: " + i);
-        drawShape(instances[i], objectInfo[i]);
-    }
+    modelView = lookAt([0, 0, 0], [1, 1, 1], [0, 1, 0]);
+
+    // sphereDrawWireFrame(gl, program);
+
+    // gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+
+    multTranslation([0, 0, currentForward]);
+
+    sceneGraph();
 
     requestAnimationFrame(render);
 }
