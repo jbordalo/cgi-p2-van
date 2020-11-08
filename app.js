@@ -10,6 +10,16 @@ const CYLINDER = 2;
 const WIREFRAME = 0;
 const FULL = 1;
 
+const VAN_HEIGHT = 180;
+const VAN_WIDTH = 160;
+const VAN_BOX_LENGTH = 300;
+const VAN_COCKPIT = 150;
+const WHEEL_PLACEMENT = 90;
+const WHEEL_DIAMETER = 60;
+const WHEEL_WIDTH = 25;
+const SUPPORT_DIAMETER = 20;
+const SUPPPORT_HEIGHT = 25;
+
 let currentMode = WIREFRAME;
 let currentShape = CUBE;
 let currentForward = 0;
@@ -297,32 +307,43 @@ function drawPrimitive(shape, mode) {
 }
 
 function Chassis() {
-    multRotationX(90);
-    multScale([.8, 2, .8]);
+    multScale([VAN_BOX_LENGTH, VAN_HEIGHT, VAN_WIDTH]);
     drawPrimitive(CUBE, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Front() {
-    multRotationX(90);
-    multScale([.7, .5, .5]);
+    multScale([VAN_COCKPIT, VAN_HEIGHT/2.0, VAN_WIDTH]);
     drawPrimitive(CUBE, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Wheel() {
-    multScale([.5, .1, .5]);
+    multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
     drawPrimitive(CYLINDER, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Axle() {
-    multScale([.1, 1, .1]);
+    multScale([10, VAN_WIDTH+WHEEL_WIDTH, 10]);
     drawPrimitive(CYLINDER, currentMode);
 
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Support(){
+    multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
+
+    drawPrimitive(CYLINDER, currentMode);
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Elbow(){
+    multScale([SUPPORT_DIAMETER, SUPPORT_DIAMETER, SUPPORT_DIAMETER]);
+    drawPrimitive(SPHERE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -331,46 +352,58 @@ function sceneGraph() {
     Chassis();
     popMatrix();
     pushMatrix();
-    multTranslation([0, -.15, 1.25]);
+    multTranslation([VAN_BOX_LENGTH/2+VAN_COCKPIT/2, -VAN_HEIGHT/2 + VAN_HEIGHT/4, 1.25]);
     Front();
     popMatrix();
     pushMatrix();
-    multTranslation([0, 0, 2]);
+    multTranslation([VAN_BOX_LENGTH/4, 0, 0]);
     pushMatrix();
-    multTranslation([-0.15, -.15, -2.4]);
-    multRotationZ(90);
-    multRotationY(-time);
-    Wheel();
-    popMatrix();
     pushMatrix();
-    multTranslation([.65, -.15, -2.4]);
-    multRotationZ(90);
-    multRotationY(-time);
-    Wheel();
-    popMatrix();
-    pushMatrix();
-    multTranslation([.65, -.15, -1.2]);
-    multRotationZ(90);
-    multRotationY(-time);
-    Wheel();
-    popMatrix();
-    pushMatrix();
-    multTranslation([-.15, -.15, -1.2]);
-    multRotationZ(90);
-    multRotationY(-time);
-    Wheel();
-    popMatrix();
-    pushMatrix();
-    multTranslation([.25, -.15, -2.4]);
-    multRotationZ(90);
-    multRotationY(-time);
+    multTranslation([0, -VAN_HEIGHT/2, 0]);
+    multRotationX(90);
+    //multRotationY(-time);
     Axle();
     popMatrix();
+    multTranslation([0, -VAN_HEIGHT/2, -VAN_WIDTH/2]);
+    multRotationX(90);
+    //multRotationY(-time);
+    Wheel();
+    popMatrix();
     pushMatrix();
-    multTranslation([.25, -.15, -1.2]);
-    multRotationZ(90);
-    multRotationY(-time);
+    multTranslation([0, -VAN_HEIGHT/2, VAN_WIDTH/2]);
+    multRotationX(90);
+    //multRotationY(-time);
+    Wheel();
+    popMatrix();
+    popMatrix();
+    pushMatrix();
+    multTranslation([-VAN_BOX_LENGTH/4, 0, 0]);
+    pushMatrix();
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT/2, 0]);
+    multRotationX(90);
+    //multRotationY(-time);
     Axle();
+    popMatrix();
+    multTranslation([0, -VAN_HEIGHT/2, VAN_WIDTH/2]);
+    multRotationX(90);
+    //multRotationY(-time);
+    Wheel();
+    popMatrix();
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT/2, -VAN_WIDTH/2]);
+    multRotationX(90);
+    //multRotationY(-time);
+    Wheel();
+    popMatrix();
+    popMatrix();
+    pushMatrix();
+    multTranslation([-VAN_BOX_LENGTH/4, VAN_HEIGHT/2, 0]);
+    Support()
+    popMatrix();
+    pushMatrix();
+    multTranslation([-VAN_BOX_LENGTH/4, VAN_HEIGHT/2+SUPPPORT_HEIGHT-SUPPORT_DIAMETER/2, 0]);
+    Elbow();
     popMatrix();
     popMatrix();
 
@@ -384,13 +417,9 @@ function render() {
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
-    modelView = lookAt([0, 0, 0], [1, 1, 1], [0, 1, 0]);
-
-    // sphereDrawWireFrame(gl, program);
-
-    // gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
-
-    multTranslation([0, 0, currentForward]);
+    modelView =  lookAt([1,1,1], [0,0,0], [0,1,0]);
+    multScale([.01,.01,.01]);
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 
     sceneGraph();
 
