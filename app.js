@@ -13,12 +13,15 @@ const FULL = 1;
 const VAN_HEIGHT = 180;
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
-const VAN_COCKPIT = 150;
+const VAN_COCKPIT = 100;
 const WHEEL_PLACEMENT = 90;
 const WHEEL_DIAMETER = 60;
 const WHEEL_WIDTH = 25;
-const SUPPORT_DIAMETER = 20;
+const SUPPORT_DIAMETER = 10;
 const SUPPPORT_HEIGHT = 25;
+const ANTENNA_DIAMETER = 75;
+const HORIZONTAL_ROD_LENGTH = 150;
+
 
 let currentMode = WIREFRAME;
 let currentShape = CUBE;
@@ -28,6 +31,8 @@ let xr = 0.0, yr = 0.0, zr = 0.0;
 let sx = 1.0, sy = 1.0, sz = 1.0;
 let mProjectionLoc, mModelViewLoc;
 
+let armRotationZ =0;
+let armRotationY = 0;
 let mProjection, modelView;
 
 var matrixStack = [];
@@ -224,18 +229,30 @@ document.addEventListener('keydown', e => {
             break;
         case "I":
             // liftArm();
-            console.log("Lift arm");
+            armRotationZ+=5;
+            if(armRotationZ>165){
+                armRotationZ = 165;
+                console.error("Can't go further.")
+            }
+            console.log("LiftArm");
             break;
         case "K":
             // lowerArm();
+            armRotationZ-=5;
+            if(armRotationZ<0){
+                armRotationZ = 0;
+                console.error("Can't go further.")
+            }
             console.log("Lower arm");
             break;
         case "J":
             // rotateArmLeft();
+            armRotationY+=5;
             console.log("Rotate arm left");
             break;
         case "L":
             // rotateArmRight();
+            armRotationY-=5;
             console.log("Rotate arm right");
             break;
         default:
@@ -314,7 +331,7 @@ function Chassis() {
 }
 
 function Front() {
-    multScale([VAN_COCKPIT, VAN_HEIGHT/2.0, VAN_WIDTH]);
+    multScale([VAN_COCKPIT, 2* VAN_HEIGHT/3.0, VAN_WIDTH]);
     drawPrimitive(CUBE, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
@@ -336,7 +353,6 @@ function Axle() {
 
 function Support(){
     multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
-
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -347,12 +363,25 @@ function Elbow(){
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
+function Arm(){
+    multRotationZ(90);
+    multScale([SUPPORT_DIAMETER, HORIZONTAL_ROD_LENGTH, SUPPORT_DIAMETER]);
+    drawPrimitive(CYLINDER, currentMode);
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
+function Antenna(){
+    multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
+    drawPrimitive(SPHERE, currentMode);
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
 function sceneGraph() {
     pushMatrix();
     Chassis();
     popMatrix();
     pushMatrix();
-    multTranslation([VAN_BOX_LENGTH/2+VAN_COCKPIT/2, -VAN_HEIGHT/2 + VAN_HEIGHT/4, 1.25]);
+    multTranslation([VAN_BOX_LENGTH/2+VAN_COCKPIT/2, -VAN_HEIGHT/3 + VAN_HEIGHT/6, 0]);
     Front();
     popMatrix();
     pushMatrix();
@@ -397,15 +426,32 @@ function sceneGraph() {
     Wheel();
     popMatrix();
     popMatrix();
+    //TODO this translation can take the elements to the top of the van
+    // and then other translations specific to the elements are done in their place
+    multTranslation([0, VAN_HEIGHT/2+SUPPPORT_HEIGHT/2, 0]);
     pushMatrix();
-    multTranslation([-VAN_BOX_LENGTH/4, VAN_HEIGHT/2, 0]);
-    Support()
+    Support();
     popMatrix();
+    multTranslation([0, SUPPPORT_HEIGHT/2, 0]);
+    multRotationY(armRotationY);
+    multRotationZ(armRotationZ);
     pushMatrix();
-    multTranslation([-VAN_BOX_LENGTH/4, VAN_HEIGHT/2+SUPPPORT_HEIGHT-SUPPORT_DIAMETER/2, 0]);
     Elbow();
     popMatrix();
+    pushMatrix();
+    multTranslation([HORIZONTAL_ROD_LENGTH/2,0,0]);
+    Arm();
     popMatrix();
+    pushMatrix();
+    multTranslation([HORIZONTAL_ROD_LENGTH,2*SUPPPORT_HEIGHT,0]);
+    Antenna();
+    popMatrix();
+    pushMatrix();
+    multTranslation([HORIZONTAL_ROD_LENGTH,0,0]);
+    Support();
+    popMatrix();
+    popMatrix();
+    
 
 }
 
@@ -413,12 +459,11 @@ function render() {
     time += 1;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-2, 2, -2, 2, 10, -10);
+    var projection = ortho(-300, 300, -300, 300, 900, -900);
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
-    modelView =  lookAt([1,1,1], [0,0,0], [0,1,0]);
-    multScale([.01,.01,.01]);
+    modelView =  lookAt([20,0,40], [20,0,0], [0,1,0]);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 
     sceneGraph();
