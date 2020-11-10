@@ -10,6 +10,11 @@ const CYLINDER = 2;
 const WIREFRAME = 0;
 const FULL = 1;
 
+const CUSTOM = 0;
+const TOP = 1;
+const LATERAL = 2;
+const FRONT = 3;
+
 const VAN_HEIGHT = 180;
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
@@ -33,6 +38,9 @@ let mProjectionLoc, mModelViewLoc;
 
 let armRotationZ =0;
 let armRotationY = 0;
+let camera = CUSTOM;
+
+
 let mProjection, modelView;
 
 var matrixStack = [];
@@ -191,18 +199,21 @@ document.addEventListener('keydown', e => {
     switch (keyName.toUpperCase()) {
         case "1":
             // topView();
+            camera = TOP;
             console.log("Top view");
             break;
         case "2":
-            // sideView();
+            camera = LATERAL;
             console.log("Side view");
             break;
         case "3":
             // frontView():
+            camera = FRONT;
             console.log("Front view");
             break;
         case "0":
             // customView();
+            camera = CUSTOM;
             console.log("Custom view");
             break;
         case " ":
@@ -455,6 +466,23 @@ function sceneGraph() {
 
 }
 
+function setView(){
+    switch(camera){
+        case TOP:
+            modelView = lookAt([20,40,0], [20,0,0], [1,0,0]);
+        break;
+        case LATERAL:
+            modelView = lookAt([20,0,40], [20,0,0], [0,1,0]);
+        break;
+        case FRONT:
+            modelView = lookAt([40,0,0], [0,0,0], [0,1,0]);
+        break;
+        case CUSTOM:
+            modelView = lookAt([40,20,40], [20,0,0], [0,1,0]);
+        break;
+    }
+}
+
 function render() {
     time += 1;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -463,7 +491,7 @@ function render() {
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
-    modelView =  lookAt([20,0,40], [20,0,0], [0,1,0]);
+    setView();
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 
     sceneGraph();
