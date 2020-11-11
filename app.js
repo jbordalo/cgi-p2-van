@@ -33,8 +33,9 @@ let currentForward = 0;
 
 let mProjectionLoc, mModelViewLoc;
 
-let armRotationZ =0;
+let armRotationZ = 0;
 let armRotationY = 0;
+let wheelRotation = 0;
 let camera = CUSTOM;
 
 
@@ -110,10 +111,16 @@ document.addEventListener('keydown', e => {
             break;
         case "A":
             // steerLeft();
+            if(wheelRotation<40){
+                wheelRotation+=5;
+            }
             console.log("Steer left");
             break;
         case "D":
             // steerRight();
+            if(wheelRotation>-40){
+                wheelRotation-=5;
+            }
             console.log("Steer right");
             break;
         case "I":
@@ -267,21 +274,22 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([VAN_BOX_LENGTH/4, 0, 0]);
     pushMatrix();
-    pushMatrix();
+   // pushMatrix();
     multTranslation([0, -VAN_HEIGHT/2, 0]);
     multRotationX(90);
     //multRotationY(-time);
     Axle();
     popMatrix();
+    pushMatrix();
     multTranslation([0, -VAN_HEIGHT/2, -VAN_WIDTH/2]);
     multRotationX(90);
-    //multRotationY(-time);
+    multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT/2, VAN_WIDTH/2]);
     multRotationX(90);
-    //multRotationY(-time);
+    multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
     popMatrix();
