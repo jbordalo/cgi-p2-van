@@ -97,6 +97,7 @@ document.addEventListener('keydown', e => {
             break;
         case " ":
             // changeColors();
+            currentMode = currentMode == WIREFRAME ? FULL : WIREFRAME;
             console.log("Color change");
             break;
         case "W":
