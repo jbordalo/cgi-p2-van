@@ -1,12 +1,14 @@
 /** @type {WebGLRenderingContext} */
 var gl;
 let program;
+let canvas;
 
 let time = 0;
 
 const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
+const PARABOLOID = 3;
 const WIREFRAME = 0;
 const FULL = 1;
 
@@ -37,7 +39,6 @@ let armRotationZ = 0;
 let armRotationY = 0;
 let wheelRotation = 0;
 let camera = CUSTOM;
-
 
 let mProjection, modelView;
 
@@ -158,14 +159,23 @@ document.addEventListener('keydown', e => {
     }
 });
 
+function fit_canvas_to_window() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    aspect = canvas.width / canvas.height;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+
+}
+
 window.onload = function init() {
-    var canvas = document.getElementById("gl-canvas");
+    canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
     if (!gl) { alert("WebGL isn't available"); }
 
     // Configure WebGL
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    fit_canvas_to_window();
+    gl.enable(gl.DEPTH_TEST);
 
     // Load shaders and initialize attribute buffers
     program = initShaders(gl, "vertex-shader", "fragment-shader");
@@ -206,6 +216,9 @@ function drawPrimitive(shape, mode) {
                 cylinderDrawFilled(gl, program);
             }
             break;
+        case PARABOLOID:
+            paraboloidDrawWireFrame(gl, program);
+            break;
         default:
             break;
     }
@@ -219,13 +232,15 @@ function Chassis() {
 }
 
 function Front() {
-    multScale([VAN_COCKPIT, 2* VAN_HEIGHT/3.0, VAN_WIDTH]);
+    multScale([VAN_COCKPIT, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
     drawPrimitive(CUBE, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Wheel() {
+    wheelYRotation += calculateWheelRotation(dx);
+    multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
     drawPrimitive(CYLINDER, currentMode);
 
@@ -344,20 +359,20 @@ function sceneGraph() {
 
 }
 
-function setView(){
-    switch(camera){
+function setView() {
+    switch (camera) {
         case TOP:
-            modelView = lookAt([20,40,0], [20,0,0], [1,0,0]);
-        break;
+            modelView = lookAt([20, -40, 0], [20, 0, 0], [1, 0, 0]);
+            break;
         case LATERAL:
-            modelView = lookAt([20,0,40], [20,0,0], [0,1,0]);
-        break;
+            modelView = lookAt([20, 0, 40], [20, 0, 0], [0, 1, 0]);
+            break;
         case FRONT:
-            modelView = lookAt([40,0,0], [0,0,0], [0,1,0]);
-        break;
+            modelView = lookAt([40, 0, 0], [0, 0, 0], [0, 1, 0]);
+            break;
         case CUSTOM:
-            modelView = lookAt([40,20,40], [20,0,0], [0,1,0]);
-        break;
+            modelView = lookAt([-20, -20, 40], [0, 0, 0], [0, 1, 0]);
+            break;
     }
 }
 
