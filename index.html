@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-  <script id="vertex-shader" type="x-shader/x-vertex">
+  <head>
+    <script id="vertex-shader" type="x-shader/x-vertex">
       attribute vec4 vPosition;
       attribute vec4 vNormal;
       varying vec4 fNormal;
@@ -16,30 +15,29 @@
       }
     </script>
 
-  <script id="fragment-shader" type="x-shader/x-fragment">
+    <script id="fragment-shader" type="x-shader/x-fragment">
       precision highp float;
       varying vec4 fNormal;
       void main() {
           gl_FragColor = abs(fNormal);
       }
     </script>
-  <script type="text/javascript" src="Common/webgl-utils.js"></script>
-  <script type="text/javascript" src="Common/initShaders.js"></script>
-  <script type="text/javascript" src="Common/MV.js"></script>
-  <script type="text/javascript" src="Common/cube.js"></script>
-  <script type="text/javascript" src="Common/sphere.js"></script>
-  <script type="text/javascript" src="Common/cylinder.js"></script>
-  <script type="text/javascript" src="Common/torus.js"></script>
+    <script type="text/javascript" src="Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="Common/initShaders.js"></script>
+    <script type="text/javascript" src="Common/MV.js"></script>
+    <script type="text/javascript" src="Common/cube.js"></script>
+    <script type="text/javascript" src="Common/sphere.js"></script>
+    <script type="text/javascript" src="Common/cylinder.js"></script>
+    <script type="text/javascript" src="Common/torus.js"></script>
     <script type="text/javascript" src="Common/paraboloid.js"></script>
-</head>
+  </head>
 
-<body>
-  <title>Triangle</title>
-  <canvas id="gl-canvas" width="512" height="512">
-    Oops... your browser doesn't support the HTML5 canvas element"
-  </canvas>
-  <br />
-  <script type="text/javascript" src="app.js"></script>
-</body>
-
+  <body>
+    <title>Triangle</title>
+    <canvas id="gl-canvas" width="100%" height="100%">
+      Oops... your browser doesn't support the HTML5 canvas element"
+    </canvas>
+    <br />
+    <script type="text/javascript" src="app.js"></script>
+  </body>
 </html>

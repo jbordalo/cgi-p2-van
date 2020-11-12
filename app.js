@@ -5,6 +5,8 @@ let canvas;
 
 let time = 0;
 
+const VELOCITY_LIMIT = 5;
+
 const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
@@ -31,7 +33,9 @@ const HORIZONTAL_ROD_LENGTH = 150;
 
 
 let currentMode = WIREFRAME;
-let currentForward = 0;
+let dx = 0;
+let xPos = 0;
+let wheelYRotation = 0;
 
 let mProjectionLoc, mModelViewLoc;
 
@@ -103,41 +107,41 @@ document.addEventListener('keydown', e => {
             break;
         case "W":
             // goForwards();
-            currentForward += 0.1;
+            dx = dx + 1 < VELOCITY_LIMIT ? dx += 1 : dx;
             console.log("Move forwards");
             break;
         case "S":
             // goBackwards();
-            currentForward -= 0.1;
+            dx = Math.abs(dx - 1) < VELOCITY_LIMIT ? dx -= 1 : dx;
             console.log("Move backwards");
             break;
         case "A":
             // steerLeft();
-            if(wheelRotation<40){
-                wheelRotation+=5;
+            if (wheelRotation < 40) {
+                wheelRotation += 5;
             }
             console.log("Steer left");
             break;
         case "D":
             // steerRight();
-            if(wheelRotation>-40){
-                wheelRotation-=5;
+            if (wheelRotation > -40) {
+                wheelRotation -= 5;
             }
             console.log("Steer right");
             break;
         case "I":
             // liftArm();
-            armRotationZ+=5;
-            if(armRotationZ>165){
+            armRotationZ += 5;
+            if (armRotationZ > 165) {
                 armRotationZ = 165;
                 console.error("Can't go further.")
             }
-            console.log("LiftArm");
+            console.log("Lift arm");
             break;
         case "K":
             // lowerArm();
-            armRotationZ-=5;
-            if(armRotationZ<0){
+            armRotationZ -= 5;
+            if (armRotationZ < 0) {
                 armRotationZ = 0;
                 console.error("Can't go further.")
             }
@@ -145,12 +149,12 @@ document.addEventListener('keydown', e => {
             break;
         case "J":
             // rotateArmLeft();
-            armRotationY+=5;
+            armRotationY += 5;
             console.log("Rotate arm left");
             break;
         case "L":
             // rotateArmRight();
-            armRotationY-=5;
+            armRotationY -= 5;
             console.log("Rotate arm right");
             break;
         default:
@@ -184,10 +188,11 @@ window.onload = function init() {
     cubeInit(gl);
     sphereInit(gl);
     cylinderInit(gl);
+    paraboloidInit(gl);
 
     mModelViewLoc = gl.getUniformLocation(program, 'mModelView');
     mProjectionLoc = gl.getUniformLocation(program, 'mProjection');
-    
+
     render();
 }
 
@@ -248,115 +253,123 @@ function Wheel() {
 }
 
 function Axle() {
-    multScale([10, VAN_WIDTH+WHEEL_WIDTH, 10]);
+    multScale([10, VAN_WIDTH + WHEEL_WIDTH, 10]);
     drawPrimitive(CYLINDER, currentMode);
 
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
-function Support(){
+function Support() {
     multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
-function Elbow(){
+function Elbow() {
     multScale([SUPPORT_DIAMETER, SUPPORT_DIAMETER, SUPPORT_DIAMETER]);
     drawPrimitive(SPHERE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
-function Arm(){
+function Arm() {
     multRotationZ(90);
     multScale([SUPPORT_DIAMETER, HORIZONTAL_ROD_LENGTH, SUPPORT_DIAMETER]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
-function Antenna(){
+function Antenna() {
+    // multRotationX(time);
+    multTranslation([0, -40, 0]);
     multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
-    drawPrimitive(SPHERE, currentMode);
+    drawPrimitive(PARABOLOID, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
+function calculateWheelRotation(dx) {
+    // alfa = length / r;
+    const r = WHEEL_DIAMETER / 2;
+    return dx * Math.PI / r;
+}
+
 function sceneGraph() {
+    xPos += dx;
+    multTranslation([xPos, 0, 0]);
+
     pushMatrix();
     Chassis();
     popMatrix();
     pushMatrix();
-    multTranslation([VAN_BOX_LENGTH/2+VAN_COCKPIT/2, -VAN_HEIGHT/3 + VAN_HEIGHT/6, 0]);
+    multTranslation([VAN_BOX_LENGTH / 2 + VAN_COCKPIT / 2, -VAN_HEIGHT / 3 + VAN_HEIGHT / 6, 0]);
     Front();
     popMatrix();
     pushMatrix();
-    multTranslation([VAN_BOX_LENGTH/4, 0, 0]);
+    multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
+
     pushMatrix();
-   // pushMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, 0]);
+    // pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
     //multRotationY(-time);
     Axle();
     popMatrix();
     pushMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, -VAN_WIDTH/2]);
+    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
     pushMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, VAN_WIDTH/2]);
+    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
     popMatrix();
     pushMatrix();
-    multTranslation([-VAN_BOX_LENGTH/4, 0, 0]);
+    multTranslation([-VAN_BOX_LENGTH / 4, 0, 0]);
     pushMatrix();
     pushMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, 0]);
+    multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
     //multRotationY(-time);
     Axle();
     popMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, VAN_WIDTH/2]);
+    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
-    //multRotationY(-time);
     Wheel();
     popMatrix();
     pushMatrix();
-    multTranslation([0, -VAN_HEIGHT/2, -VAN_WIDTH/2]);
+    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
-    //multRotationY(-time);
     Wheel();
     popMatrix();
     popMatrix();
     //TODO this translation can take the elements to the top of the van
     // and then other translations specific to the elements are done in their place
-    multTranslation([0, VAN_HEIGHT/2+SUPPPORT_HEIGHT/2, 0]);
+    multTranslation([0, VAN_HEIGHT / 2 + SUPPPORT_HEIGHT / 2, 0]);
     pushMatrix();
     Support();
     popMatrix();
-    multTranslation([0, SUPPPORT_HEIGHT/2, 0]);
+    multTranslation([0, SUPPPORT_HEIGHT / 2, 0]);
     multRotationY(armRotationY);
     multRotationZ(armRotationZ);
     pushMatrix();
     Elbow();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH/2,0,0]);
+    multTranslation([HORIZONTAL_ROD_LENGTH / 2, 0, 0]);
     Arm();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH,2*SUPPPORT_HEIGHT,0]);
+    multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT, 0]);
     Antenna();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH,0,0]);
+    multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
     Support();
     popMatrix();
     popMatrix();
-    
-
 }
 
 function setView() {
