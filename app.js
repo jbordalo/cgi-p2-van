@@ -149,12 +149,12 @@ document.addEventListener('keydown', e => {
             break;
         case "J":
             // rotateArmLeft();
-            armRotationY += 5;
+            armRotationY -= 5;
             console.log("Rotate arm left");
             break;
         case "L":
             // rotateArmRight();
-            armRotationY -= 5;
+            armRotationY += 5;
             console.log("Rotate arm right");
             break;
         default:
@@ -293,8 +293,16 @@ function calculateWheelRotation(dx) {
 }
 
 function sceneGraph() {
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, 0]);
+    multScale([canvas.width, 0, canvas.height]);
+    drawPrimitive(CUBE, WIREFRAME);
+    popMatrix();
+
     xPos += dx;
     multTranslation([xPos, 0, 0]);
+
+
 
     pushMatrix();
     Chassis();
