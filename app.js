@@ -209,28 +209,15 @@ window.onload = function init() {
 
 function drawPrimitive(shape, mode) {
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
-
     switch (shape) {
         case CUBE:
-            if (mode == WIREFRAME) {
-                cubeDrawWireFrame(gl, program);
-            } else {
-                cubeDrawFilled(gl, program);
-            }
+            cubeDrawWireFrame(gl, program);
             break;
         case SPHERE:
-            if (mode == WIREFRAME) {
-                sphereDrawWireFrame(gl, program);
-            } else {
-                sphereDrawFilled(gl, program);
-            }
+            sphereDrawWireFrame(gl, program);
             break;
         case CYLINDER:
-            if (mode == WIREFRAME) {
-                cylinderDrawWireFrame(gl, program);
-            } else {
-                cylinderDrawFilled(gl, program);
-            }
+            cylinderDrawWireFrame(gl, program);
             break;
         case PARABOLOID:
             paraboloidDrawWireFrame(gl, program);
