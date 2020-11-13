@@ -117,15 +117,15 @@ document.addEventListener('keydown', e => {
             break;
         case "A":
             // steerLeft();
-            if (wheelRotation < 40) {
-                wheelRotation += 5;
+            if (wheelRotation > -40) {
+                wheelRotation -= 5;
             }
             console.log("Steer left");
             break;
         case "D":
             // steerRight();
-            if (wheelRotation > -40) {
-                wheelRotation -= 5;
+            if (wheelRotation < 40) {
+                wheelRotation += 5;
             }
             console.log("Steer right");
             break;
