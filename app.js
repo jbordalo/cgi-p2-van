@@ -35,8 +35,10 @@ const HORIZONTAL_ROD_LENGTH = 150;
 
 let currentMode = WIREFRAME;
 let mode = false;
-let dx = 0;
-let xPos = 0;
+let position = vec3(0, 0, 0);
+let velocity = vec3(0, 0, 0);
+let acceleration = vec3(0, 0, 0);
+
 let wheelYRotation = 0;
 
 let mProjectionLoc, mModelViewLoc;
@@ -110,12 +112,12 @@ document.addEventListener('keydown', e => {
             break;
         case "W":
             // goForwards();
-            dx = dx + 1 < VELOCITY_LIMIT ? dx += 1 : dx;
+            velocity[0] = velocity[0] + 1 < VELOCITY_LIMIT ? velocity[0] += 1 : velocity[0];
             console.log("Move forwards");
             break;
         case "S":
             // goBackwards();
-            dx = Math.abs(dx - 1) < VELOCITY_LIMIT ? dx -= 1 : dx;
+            velocity[0] = Math.abs(velocity[0] - 1) < VELOCITY_LIMIT ? velocity[0] -= 1 : velocity[0];
             console.log("Move backwards");
             break;
         case "A":
@@ -229,44 +231,44 @@ function drawPrimitive(shape, mode) {
 
 function Chassis() {
     multScale([VAN_BOX_LENGTH, VAN_HEIGHT, VAN_WIDTH]);
-    gl.uniform4fv(colorLoc, [.9,.2,.6,1.0]);
+    gl.uniform4fv(colorLoc, [.9, .2, .6, 1.0]);
     drawPrimitive(CUBE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Front() {
     multScale([VAN_COCKPIT, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
-    gl.uniform4fv(colorLoc, [.4,.5,.6,1.0]);
+    gl.uniform4fv(colorLoc, [.4, .5, .6, 1.0]);
     drawPrimitive(CUBE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Wheel() {
-    wheelYRotation += calculateWheelRotation(dx);
+    wheelYRotation += calculateWheelRotation(velocity[0]);
     multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
-    gl.uniform4fv(colorLoc, [1.0,0.0,1.0,1.0]);
+    gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Axle() {
     multScale([10, VAN_WIDTH + WHEEL_WIDTH, 10]);
-    gl.uniform4fv(colorLoc, [0.0,0.7,0.7,1.0]);
+    gl.uniform4fv(colorLoc, [0.0, 0.7, 0.7, 1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Support() {
     multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
-    gl.uniform4fv(colorLoc, [.0,1.0,1.0,1.0]);
+    gl.uniform4fv(colorLoc, [.0, 1.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Elbow() {
     multScale([SUPPORT_DIAMETER, SUPPORT_DIAMETER, SUPPORT_DIAMETER]);
-    gl.uniform4fv(colorLoc, [.6,.0,.9,1.0]);
+    gl.uniform4fv(colorLoc, [.6, .0, .9, 1.0]);
     drawPrimitive(SPHERE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -302,10 +304,8 @@ function sceneGraph() {
     drawPrimitive(CUBE, WIREFRAME);
     popMatrix();
 
-    xPos += dx;
-    multTranslation([xPos, 0, 0]);
-
-
+    position[0] += velocity[0];
+    multTranslation(position);
 
     pushMatrix();
     Chassis();
