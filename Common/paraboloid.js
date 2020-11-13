@@ -22,15 +22,15 @@ function paraboloidInit(gl, nlat, nlon) {
 function paraboloidBuild(nlat, nlon) {
     // phi will be latitude
     // theta will be longitude
-    // var d_phi = Math.PI / (nlat + 1);
-    var d_phi = Math.PI / (2 * (nlat + 1));
+    // var d_phi = Math.PI / (2*nlat + 1);
+    var d_phi = Math.PI / ((nlat + 1));
     var d_theta = 2 * Math.PI / nlon;
     var r = 0.5;
 
-    // Generate north polar cap
-    // var north = vec3(0, r, 0);
-    // paraboloid_points.push(north);
-    // paraboloid_normals.push(vec3(0, 1, 0));
+    // Generate minimum point
+    var minimum = vec3(0, 0, 0);
+    paraboloid_points.push(minimum);
+    paraboloid_normals.push(vec3(0, 1, 0));
 
     // Generate middle
     for (var i = 0, phi = Math.PI / 2 - d_phi; i < nlat; i++, phi -= d_phi) {
@@ -53,15 +53,15 @@ function paraboloidBuild(nlat, nlon) {
 
     // Generate the faces
 
-    // north pole faces
-    // for (var i = 0; i < nlon - 1; i++) {
-    //     paraboloid_faces.push(0);
-    //     paraboloid_faces.push(i + 2);
-    //     paraboloid_faces.push(i + 1);
-    // }
-    // paraboloid_faces.push(0);
-    // paraboloid_faces.push(1);
-    // paraboloid_faces.push(nlon);
+    // minimum point faces
+    for (var i = 0; i < nlon - 1; i++) {
+        paraboloid_faces.push(0);
+        paraboloid_faces.push(i + 2);
+        paraboloid_faces.push(i + 1);
+    }
+    paraboloid_faces.push(0);
+    paraboloid_faces.push(1);
+    paraboloid_faces.push(nlon);
 
     // general middle faces
     var offset = 1;
@@ -99,7 +99,10 @@ function paraboloidBuild(nlat, nlon) {
     // paraboloid_faces.push(offset);
 
     // Build the edges
-
+    for (var i = 0; i < nlon; i++) {
+        paraboloid_edges.push(0);   // minimum
+        paraboloid_edges.push(i + 1);
+    }
 
     for (var i = 0; i < nlat; i++, p++) {
         for (var j = 0; j < nlon; j++, p++) {
