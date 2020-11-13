@@ -2,6 +2,7 @@
 var gl;
 let program;
 let canvas;
+let aspect;
 
 let time = 0;
 
@@ -39,7 +40,7 @@ let xPos = 0;
 let wheelYRotation = 0;
 
 let mProjectionLoc, mModelViewLoc;
-let colorModeLoc,colorLoc;
+let colorModeLoc, colorLoc;
 
 let armRotationZ = 0;
 let armRotationY = 0;
@@ -105,7 +106,6 @@ document.addEventListener('keydown', e => {
         case " ":
             // changeColors();
             mode = !mode;
-           // currentMode = currentMode == WIREFRAME ? FULL : WIREFRAME;
             console.log("Color change");
             break;
         case "W":
@@ -175,6 +175,11 @@ function fit_canvas_to_window() {
 
 }
 
+window.onresize = function () {
+    fit_canvas_to_window();
+}
+
+
 window.onload = function init() {
     canvas = document.getElementById("gl-canvas");
     gl = WebGLUtils.setupWebGL(canvas);
@@ -182,7 +187,7 @@ window.onload = function init() {
 
     // Configure WebGL
     fit_canvas_to_window();
-    gl.clearColor(0.0,0.0,0.0,1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
     // Load shaders and initialize attribute buffers
@@ -282,7 +287,7 @@ function Elbow() {
 function Arm() {
     multRotationZ(90);
     multScale([SUPPORT_DIAMETER, HORIZONTAL_ROD_LENGTH, SUPPORT_DIAMETER]);
-    gl.uniform4fv(colorLoc, [.0,.9,.6,1.0]);
+    gl.uniform4fv(colorLoc, [.0, .9, .6, 1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -291,7 +296,7 @@ function Antenna() {
     // multRotationX(time);
     multTranslation([0, -40, 0]);
     multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
-    gl.uniform4fv(colorLoc, [.5,.0,.5,1.0]);
+    gl.uniform4fv(colorLoc, [.5, .0, .5, 1.0]);
     drawPrimitive(PARABOLOID, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -306,7 +311,7 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, 0]);
     multScale([canvas.width, 0, canvas.height]);
-    gl.uniform4fv(colorLoc, [1.0,1.0,1.0,1.0]);
+    gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
     drawPrimitive(CUBE, WIREFRAME);
     popMatrix();
 
@@ -415,7 +420,7 @@ function render() {
     gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-300, 300, -300, 300, -900, 900);
+    var projection = ortho(-300 * aspect, 300 * aspect, -300, 300, -900, 900);
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
