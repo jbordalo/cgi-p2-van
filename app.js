@@ -179,6 +179,7 @@ window.onload = function init() {
 
     // Configure WebGL
     fit_canvas_to_window();
+    gl.clearColor(0.0,0.0,0.0,1.0);
     gl.enable(gl.DEPTH_TEST);
 
     // Load shaders and initialize attribute buffers
