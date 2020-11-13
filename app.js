@@ -384,7 +384,7 @@ function sceneGraph() {
 function setView() {
     switch (camera) {
         case TOP:
-            modelView = lookAt([20, -40, 0], [20, 0, 0], [1, 0, 0]);
+            modelView = lookAt([20, 40, 0], [20, 0, 0], [1, 0, 0]);
             break;
         case LATERAL:
             modelView = lookAt([20, 0, 40], [20, 0, 0], [0, 1, 0]);
@@ -393,7 +393,7 @@ function setView() {
             modelView = lookAt([40, 0, 0], [0, 0, 0], [0, 1, 0]);
             break;
         case CUSTOM:
-            modelView = lookAt([-20, -20, 40], [0, 0, 0], [0, 1, 0]);
+            modelView = lookAt([20, 20, 40], [0, 0, 0], [0, 1, 0]);
             break;
     }
 }
@@ -402,7 +402,7 @@ function render() {
     time += 1;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-300, 300, -300, 300, 900, -900);
+    var projection = ortho(-300, 300, -300, 300, -900, 900);
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
