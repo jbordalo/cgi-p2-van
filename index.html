@@ -18,8 +18,14 @@
     <script id="fragment-shader" type="x-shader/x-fragment">
       precision highp float;
       varying vec4 fNormal;
+      uniform vec4 solidColor;
+      uniform bool isSolid;
       void main() {
+        if(isSolid) {
+          gl_FragColor = solidColor;
+        } else {
           gl_FragColor = abs(fNormal);
+        }
       }
     </script>
     <script type="text/javascript" src="Common/webgl-utils.js"></script>

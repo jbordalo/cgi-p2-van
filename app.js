@@ -33,11 +33,13 @@ const HORIZONTAL_ROD_LENGTH = 150;
 
 
 let currentMode = WIREFRAME;
+let mode = false;
 let dx = 0;
 let xPos = 0;
 let wheelYRotation = 0;
 
 let mProjectionLoc, mModelViewLoc;
+let colorModeLoc,colorLoc;
 
 let armRotationZ = 0;
 let armRotationY = 0;
@@ -102,7 +104,8 @@ document.addEventListener('keydown', e => {
             break;
         case " ":
             // changeColors();
-            currentMode = currentMode == WIREFRAME ? FULL : WIREFRAME;
+            mode = !mode;
+           // currentMode = currentMode == WIREFRAME ? FULL : WIREFRAME;
             console.log("Color change");
             break;
         case "W":
@@ -149,12 +152,12 @@ document.addEventListener('keydown', e => {
             break;
         case "J":
             // rotateArmLeft();
-            armRotationY -= 5;
+            armRotationY += 5;
             console.log("Rotate arm left");
             break;
         case "L":
             // rotateArmRight();
-            armRotationY += 5;
+            armRotationY -= 5;
             console.log("Rotate arm right");
             break;
         default:
@@ -193,6 +196,8 @@ window.onload = function init() {
 
     mModelViewLoc = gl.getUniformLocation(program, 'mModelView');
     mProjectionLoc = gl.getUniformLocation(program, 'mProjection');
+    colorModeLoc = gl.getUniformLocation(program, 'isSolid');
+    colorLoc = gl.getUniformLocation(program, 'solidColor');
 
     render();
 }
@@ -232,15 +237,15 @@ function drawPrimitive(shape, mode) {
 
 function Chassis() {
     multScale([VAN_BOX_LENGTH, VAN_HEIGHT, VAN_WIDTH]);
+    gl.uniform4fv(colorLoc, [.9,.2,.6,1.0]);
     drawPrimitive(CUBE, currentMode);
-
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Front() {
     multScale([VAN_COCKPIT, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
+    gl.uniform4fv(colorLoc, [.4,.5,.6,1.0]);
     drawPrimitive(CUBE, currentMode);
-
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -248,26 +253,28 @@ function Wheel() {
     wheelYRotation += calculateWheelRotation(dx);
     multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
+    gl.uniform4fv(colorLoc, [1.0,0.0,1.0,1.0]);
     drawPrimitive(CYLINDER, currentMode);
-
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Axle() {
     multScale([10, VAN_WIDTH + WHEEL_WIDTH, 10]);
+    gl.uniform4fv(colorLoc, [0.0,0.7,0.7,1.0]);
     drawPrimitive(CYLINDER, currentMode);
-
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Support() {
     multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
+    gl.uniform4fv(colorLoc, [.0,1.0,1.0,1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Elbow() {
     multScale([SUPPORT_DIAMETER, SUPPORT_DIAMETER, SUPPORT_DIAMETER]);
+    gl.uniform4fv(colorLoc, [.6,.0,.9,1.0]);
     drawPrimitive(SPHERE, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -275,6 +282,7 @@ function Elbow() {
 function Arm() {
     multRotationZ(90);
     multScale([SUPPORT_DIAMETER, HORIZONTAL_ROD_LENGTH, SUPPORT_DIAMETER]);
+    gl.uniform4fv(colorLoc, [.0,.9,.6,1.0]);
     drawPrimitive(CYLINDER, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -283,6 +291,7 @@ function Antenna() {
     // multRotationX(time);
     multTranslation([0, -40, 0]);
     multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
+    gl.uniform4fv(colorLoc, [.5,.0,.5,1.0]);
     drawPrimitive(PARABOLOID, currentMode);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
@@ -297,6 +306,7 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, 0]);
     multScale([canvas.width, 0, canvas.height]);
+    gl.uniform4fv(colorLoc, [1.0,1.0,1.0,1.0]);
     drawPrimitive(CUBE, WIREFRAME);
     popMatrix();
 
@@ -326,6 +336,7 @@ function sceneGraph() {
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
     multRotationZ(wheelRotation);
+
     Wheel();
     popMatrix();
     pushMatrix();
@@ -400,6 +411,8 @@ function setView() {
 
 function render() {
     time += 1;
+
+    gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     var projection = ortho(-300, 300, -300, 300, -900, 900);
