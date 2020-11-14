@@ -31,12 +31,12 @@ const SUPPORT_DIAMETER = 10;
 const SUPPPORT_HEIGHT = 25;
 const ANTENNA_DIAMETER = 75;
 const HORIZONTAL_ROD_LENGTH = 150;
-
+const WHEELBASE = VAN_BOX_LENGTH / 2;
 
 let currentMode = WIREFRAME;
 let mode = false;
 let position = vec3(0, 0, 0);
-let velocity = vec3(0, 0, 0);
+let velocity = 0;
 let acceleration = vec3(0, 0, 0);
 
 let wheelYRotation = 0;
@@ -47,7 +47,8 @@ let colorModeLoc, colorLoc;
 let armRotationZ = 0;
 let armRotationY = 0;
 let wheelRotation = 0;
-let camera = CUSTOM;
+let currentRotationAngle = 0;
+let camera = TOP;
 
 let mProjection, modelView;
 
@@ -82,6 +83,10 @@ function multRotationZ(angle) {
     modelView = mult(modelView, rotateZ(angle));
 }
 
+function calculateVelocity(magnitude) {
+    console.log();
+}
+
 document.addEventListener('keydown', e => {
     const keyName = e.key;
     // console.log(keyName);
@@ -112,12 +117,12 @@ document.addEventListener('keydown', e => {
             break;
         case "W":
             // goForwards();
-            velocity[0] = velocity[0] + 1 < VELOCITY_LIMIT ? velocity[0] += 1 : velocity[0];
+            velocity += 50;
             console.log("Move forwards");
             break;
         case "S":
             // goBackwards();
-            velocity[0] = Math.abs(velocity[0] - 1) < VELOCITY_LIMIT ? velocity[0] -= 1 : velocity[0];
+            velocity -= 50;
             console.log("Move backwards");
             break;
         case "A":
@@ -125,6 +130,9 @@ document.addEventListener('keydown', e => {
             if (wheelRotation > -40) {
                 wheelRotation -= 5;
             }
+            // if (velocity[0]) return;
+            // velocity[0] = velocity[0] = 1 * Math.cos(-wheelRotation);
+            // velocity[2] = velocity[2] = 1 * Math.sin(-wheelRotation);
             console.log("Steer left");
             break;
         case "D":
@@ -132,6 +140,9 @@ document.addEventListener('keydown', e => {
             if (wheelRotation < 40) {
                 wheelRotation += 5;
             }
+            // if (velocity[0]) return;
+            // velocity[0] = velocity[0] += 1 * Math.cos(wheelRotation);
+            // velocity[2] = velocity[2] += 1 * Math.sin(wheelRotation);
             console.log("Steer right");
             break;
         case "I":
@@ -177,6 +188,42 @@ function fit_canvas_to_window() {
 
 }
 
+function drawFloor() {
+
+    // let vertices = [
+    //     vec3(-0.5, -0.5, +0.5),     // 0
+    //     vec3(+0.5, -0.5, +0.5),     // 1
+    //     vec3(+0.5, +0.5, +0.5),     // 2
+    //     vec3(-0.5, +0.5, +0.5),     // 3
+    //     vec3(-0.5, -0.5, -0.5),     // 4
+    //     vec3(+0.5, -0.5, -0.5),     // 5
+    //     vec3(+0.5, +0.5, -0.5),     // 6
+    //     vec3(-0.5, +0.5, -0.5)      // 7
+    // ];
+
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            multTranslation([0.5 * i, 0.0, 0.5 * j]);
+        }
+        drawPrimitive(CUBE);
+    }
+
+    // gl.useProgram(program);
+
+    // gl.bindBuffer(gl.ARRAY_BUFFER, cube_points_buffer);
+    // var vPosition = gl.getAttribLocation(program, "vPosition");
+    // gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(vPosition);
+
+    // gl.bindBuffer(gl.ARRAY_BUFFER, cube_normals_buffer);
+    // var vNormal = gl.getAttribLocation(program, "vNormal");
+    // gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(vNormal);
+
+    // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cube_edges_buffer);
+    // gl.drawElements(gl.LINES, cube_edges.length, gl.UNSIGNED_BYTE, 0);
+}
+
 window.onresize = function () {
     fit_canvas_to_window();
 }
@@ -209,7 +256,7 @@ window.onload = function init() {
     render();
 }
 
-function drawPrimitive(shape, mode) {
+function drawPrimitive(shape) {
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
     switch (shape) {
         case CUBE:
@@ -232,37 +279,37 @@ function drawPrimitive(shape, mode) {
 function Chassis() {
     multScale([VAN_BOX_LENGTH, VAN_HEIGHT, VAN_WIDTH]);
     gl.uniform4fv(colorLoc, [.9, .2, .6, 1.0]);
-    drawPrimitive(CUBE, currentMode);
+    drawPrimitive(CUBE);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Front() {
     multScale([VAN_COCKPIT, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
     gl.uniform4fv(colorLoc, [.4, .5, .6, 1.0]);
-    drawPrimitive(CUBE, currentMode);
+    drawPrimitive(CUBE);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Wheel() {
-    wheelYRotation += calculateWheelRotation(velocity[0]);
+    wheelYRotation += calculateWheelRotation(velocity);
     multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
-    drawPrimitive(CYLINDER, currentMode);
+    drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Axle() {
     multScale([10, VAN_WIDTH + WHEEL_WIDTH, 10]);
     gl.uniform4fv(colorLoc, [0.0, 0.7, 0.7, 1.0]);
-    drawPrimitive(CYLINDER, currentMode);
+    drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Support() {
     multScale([SUPPORT_DIAMETER, SUPPPORT_HEIGHT, SUPPORT_DIAMETER]);
     gl.uniform4fv(colorLoc, [.0, 1.0, 1.0, 1.0]);
-    drawPrimitive(CYLINDER, currentMode);
+    drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -277,7 +324,7 @@ function Arm() {
     multRotationZ(90);
     multScale([SUPPORT_DIAMETER, HORIZONTAL_ROD_LENGTH, SUPPORT_DIAMETER]);
     gl.uniform4fv(colorLoc, [.0, .9, .6, 1.0]);
-    drawPrimitive(CYLINDER, currentMode);
+    drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -286,7 +333,7 @@ function Antenna() {
     multTranslation([0, -40, 0]);
     multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
     gl.uniform4fv(colorLoc, [.5, .0, .5, 1.0]);
-    drawPrimitive(PARABOLOID, currentMode);
+    drawPrimitive(PARABOLOID);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -301,11 +348,36 @@ function sceneGraph() {
     multTranslation([0, -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, 0]);
     multScale([canvas.width, 0, canvas.height]);
     gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
-    drawPrimitive(CUBE, WIREFRAME);
+    drawFloor();
     popMatrix();
 
-    position[0] += velocity[0];
+    console.log(wheelRotation);
+
+    // arch
+    let engle = radians(-wheelRotation + currentRotationAngle);
+    let offsetX = velocity * Math.cos(-engle) * (1 / 60);
+    let offsetZ = velocity * Math.sin(-engle) * (1 / 60);
+
+    let offset = velocity * (1 / 60);
+
+    let r = WHEELBASE / Math.tan(radians(-wheelRotation));
+    let alpha = 0;
+    if (r != Infinity) {
+        alpha = (offset / r) * (180 / Math.PI);
+    }
+
+    currentRotationAngle += alpha;
+
+    currentRotationAngle %= 360;
+
+    position[0] += offsetX;
+    position[2] += offsetZ;
+
     multTranslation(position);
+
+    multTranslation
+    multRotationY(currentRotationAngle);
+
 
     pushMatrix();
     Chassis();
@@ -387,7 +459,7 @@ function sceneGraph() {
 function setView() {
     switch (camera) {
         case TOP:
-            modelView = lookAt([20, 40, 0], [20, 0, 0], [1, 0, 0]);
+            modelView = lookAt([0, 40, 0], [0, 0, 0], [1, 0, 0]);
             break;
         case LATERAL:
             modelView = lookAt([20, 0, 40], [20, 0, 0], [0, 1, 0]);
@@ -407,7 +479,7 @@ function render() {
     gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-300 * aspect, 300 * aspect, -300, 300, -900, 900);
+    var projection = ortho(-900 * aspect, 900 * aspect, -900, 900, -2700, 2700);
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
