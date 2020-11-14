@@ -6,8 +6,14 @@ let aspect;
 
 let time = 0;
 
-const VELOCITY_LIMIT = 5;
+const VP_DISTANCE = 900;
+const VELOCITY = 40;
+const VELOCITY_LIMIT = 10 * VELOCITY;
+const ARM_UPPER_LIMIT = 165;
+const ARM_LOWER_LIMIT = 0;
+const ARM_ROTATION_DELTA = 5;
 const WHEEL_TURN_LIMIT = 30;
+const WHEEL_TURN_DELTA = 5;
 const NUMBER_OF_CUBES = 10;
 
 const CUBE = 0;
@@ -109,47 +115,47 @@ document.addEventListener('keydown', e => {
             console.log("Color change");
             break;
         case "W":
-            velocity += 50;
+            velocity = velocity + VELOCITY <= VELOCITY_LIMIT ? velocity + VELOCITY : velocity;
             console.log("Move forwards");
             break;
         case "S":
-            velocity -= 50;
+            velocity = velocity + VELOCITY <= VELOCITY_LIMIT ? velocity - VELOCITY : velocity;
             console.log("Move backwards");
             break;
         case "A":
             if (wheelRotation > -WHEEL_TURN_LIMIT) {
-                wheelRotation -= 5;
+                wheelRotation -= WHEEL_TURN_DELTA;
             }
             console.log("Steer left");
             break;
         case "D":
             if (wheelRotation < WHEEL_TURN_LIMIT) {
-                wheelRotation += 5;
+                wheelRotation += WHEEL_TURN_DELTA;
             }
             console.log("Steer right");
             break;
         case "I":
-            armRotationZ += 5;
-            if (armRotationZ > 165) {
-                armRotationZ = 165;
+            armRotationZ += ARM_ROTATION_DELTA;
+            if (armRotationZ > ARM_UPPER_LIMIT) {
+                armRotationZ = ARM_UPPER_LIMIT;
                 console.error("Can't go further.")
             }
             console.log("Lift arm");
             break;
         case "K":
-            armRotationZ -= 5;
-            if (armRotationZ < 0) {
-                armRotationZ = 0;
+            armRotationZ -= ARM_ROTATION_DELTA;
+            if (armRotationZ < ARM_LOWER_LIMIT) {
+                armRotationZ = ARM_LOWER_LIMIT;
                 console.error("Can't go further.")
             }
             console.log("Lower arm");
             break;
         case "J":
-            armRotationY += 5;
+            armRotationY += ARM_ROTATION_DELTA;
             console.log("Rotate arm left");
             break;
         case "L":
-            armRotationY -= 5;
+            armRotationY -= ARM_ROTATION_DELTA;
             console.log("Rotate arm right");
             break;
         default:
@@ -426,9 +432,9 @@ function render() {
     gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-300 * aspect, 300 * aspect, -300, 300, -900, 900);
+    var projection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
 
-    gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
+    gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection)); 0
 
     setView();
     // multScale([500, 500, 500]);

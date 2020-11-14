@@ -46,11 +46,6 @@ function paraboloidBuild(nlat, nlon) {
         }
     }
 
-    // Generate norh south cap
-    // var south = vec3(0, -r, 0);
-    // paraboloid_points.push(south);
-    // paraboloid_normals.push(vec3(0, -1, 0));
-
     // Generate the faces
 
     // minimum point faces
@@ -87,17 +82,6 @@ function paraboloidBuild(nlat, nlon) {
         paraboloid_faces.push(p + 1);
     }
 
-    // south pole faces
-    // var offset = 1 + (nlat - 1) * nlon;
-    // for (var j = 0; j < nlon - 1; j++) {
-    //     paraboloid_faces.push(offset + nlon);
-    //     paraboloid_faces.push(offset + j);
-    //     paraboloid_faces.push(offset + j + 1);
-    // }
-    // paraboloid_faces.push(offset + nlon);
-    // paraboloid_faces.push(offset + nlon - 1);
-    // paraboloid_faces.push(offset);
-
     // Build the edges
     for (var i = 0; i < nlon; i++) {
         paraboloid_edges.push(0);   // minimum
@@ -116,10 +100,6 @@ function paraboloidBuild(nlat, nlon) {
                 paraboloid_edges.push(p);   // vertical line (same longitude)
                 paraboloid_edges.push(p + nlon);
             }
-            // else {
-            //     paraboloid_edges.push(p);
-            //     paraboloid_edges.push(paraboloid_points.length - 1);
-            // }
         }
     }
 
