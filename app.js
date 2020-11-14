@@ -50,7 +50,7 @@ let armRotationZ = 0;
 let armRotationY = 0;
 let wheelRotation = 0;
 let currentRotationAngle = 0;
-let camera = TOP;
+let camera = CUSTOM;
 
 let mProjection, modelView;
 
@@ -87,7 +87,6 @@ function multRotationZ(angle) {
 
 document.addEventListener('keydown', e => {
     const keyName = e.key;
-    // console.log(keyName);
     switch (keyName.toUpperCase()) {
         case "1":
             camera = TOP;
@@ -248,7 +247,7 @@ function Front() {
 
 function Wheel() {
     wheelYRotation += calculateWheelRotation(velocity);
-    multRotationY(-wheelYRotation);
+    multRotationY(-wheelYRotation * (1 / 60));
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
