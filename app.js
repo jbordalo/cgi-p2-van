@@ -7,6 +7,7 @@ let aspect;
 let time = 0;
 
 const VELOCITY_LIMIT = 5;
+const WHEEL_TURN_LIMIT = 30;
 
 const CUBE = 0;
 const SPHERE = 1;
@@ -127,7 +128,7 @@ document.addEventListener('keydown', e => {
             break;
         case "A":
             // steerLeft();
-            if (wheelRotation > -40) {
+            if (wheelRotation > -WHEEL_TURN_LIMIT) {
                 wheelRotation -= 5;
             }
             // if (velocity[0]) return;
@@ -137,7 +138,7 @@ document.addEventListener('keydown', e => {
             break;
         case "D":
             // steerRight();
-            if (wheelRotation < 40) {
+            if (wheelRotation < WHEEL_TURN_LIMIT) {
                 wheelRotation += 5;
             }
             // if (velocity[0]) return;
