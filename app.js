@@ -85,16 +85,11 @@ function multRotationZ(angle) {
     modelView = mult(modelView, rotateZ(angle));
 }
 
-function calculateVelocity(magnitude) {
-    console.log();
-}
-
 document.addEventListener('keydown', e => {
     const keyName = e.key;
     // console.log(keyName);
     switch (keyName.toUpperCase()) {
         case "1":
-            // topView();
             camera = TOP;
             console.log("Top view");
             break;
@@ -103,52 +98,38 @@ document.addEventListener('keydown', e => {
             console.log("Side view");
             break;
         case "3":
-            // frontView():
             camera = FRONT;
             console.log("Front view");
             break;
         case "0":
-            // customView();
             camera = CUSTOM;
             console.log("Custom view");
             break;
         case " ":
-            // changeColors();
             mode = !mode;
             console.log("Color change");
             break;
         case "W":
-            // goForwards();
             velocity += 50;
             console.log("Move forwards");
             break;
         case "S":
-            // goBackwards();
             velocity -= 50;
             console.log("Move backwards");
             break;
         case "A":
-            // steerLeft();
             if (wheelRotation > -WHEEL_TURN_LIMIT) {
                 wheelRotation -= 5;
             }
-            // if (velocity[0]) return;
-            // velocity[0] = velocity[0] = 1 * Math.cos(-wheelRotation);
-            // velocity[2] = velocity[2] = 1 * Math.sin(-wheelRotation);
             console.log("Steer left");
             break;
         case "D":
-            // steerRight();
             if (wheelRotation < WHEEL_TURN_LIMIT) {
                 wheelRotation += 5;
             }
-            // if (velocity[0]) return;
-            // velocity[0] = velocity[0] += 1 * Math.cos(wheelRotation);
-            // velocity[2] = velocity[2] += 1 * Math.sin(wheelRotation);
             console.log("Steer right");
             break;
         case "I":
-            // liftArm();
             armRotationZ += 5;
             if (armRotationZ > 165) {
                 armRotationZ = 165;
@@ -157,7 +138,6 @@ document.addEventListener('keydown', e => {
             console.log("Lift arm");
             break;
         case "K":
-            // lowerArm();
             armRotationZ -= 5;
             if (armRotationZ < 0) {
                 armRotationZ = 0;
@@ -166,12 +146,10 @@ document.addEventListener('keydown', e => {
             console.log("Lower arm");
             break;
         case "J":
-            // rotateArmLeft();
             armRotationY += 5;
             console.log("Rotate arm left");
             break;
         case "L":
-            // rotateArmRight();
             armRotationY -= 5;
             console.log("Rotate arm right");
             break;
@@ -206,7 +184,6 @@ function drawFloor() {
 window.onresize = function () {
     fit_canvas_to_window();
 }
-
 
 window.onload = function init() {
     canvas = document.getElementById("gl-canvas");
@@ -322,13 +299,11 @@ function calculateWheelRotation(dx) {
     return dx * Math.PI / r;
 }
 
-function sceneGraph() {
-    drawFloor();
-
+function computeMovement() {
     // arch
-    let engle = radians(-wheelRotation + currentRotationAngle);
-    let offsetX = velocity * Math.cos(-engle) * (1 / 60);
-    let offsetZ = velocity * Math.sin(-engle) * (1 / 60);
+    let angle = radians(-wheelRotation + currentRotationAngle);
+    let offsetX = velocity * Math.cos(-angle) * (1 / 60);
+    let offsetZ = velocity * Math.sin(-angle) * (1 / 60);
 
     let offset = velocity * (1 / 60);
 
@@ -339,7 +314,6 @@ function sceneGraph() {
     }
 
     currentRotationAngle += alpha;
-
     currentRotationAngle %= 360;
 
     position[0] += offsetX;
@@ -349,7 +323,12 @@ function sceneGraph() {
 
     multTranslation
     multRotationY(currentRotationAngle);
+}
 
+function sceneGraph() {
+    drawFloor();
+
+    computeMovement();
 
     pushMatrix();
     Chassis();
@@ -362,10 +341,8 @@ function sceneGraph() {
     multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
 
     pushMatrix();
-    // pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
-    //multRotationY(-time);
     Axle();
     popMatrix();
     pushMatrix();
@@ -388,7 +365,6 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
-    //multRotationY(-time);
     Axle();
     popMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
@@ -446,12 +422,12 @@ function setView() {
 }
 
 function render() {
-    time += 1;
+    time += 1 / 60;
 
     gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var projection = ortho(-900 * aspect, 900 * aspect, -900, 900, -2700, 2700);
+    var projection = ortho(-300 * aspect, 300 * aspect, -300, 300, -900, 900);
 
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
