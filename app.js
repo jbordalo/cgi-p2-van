@@ -119,7 +119,7 @@ document.addEventListener('keydown', e => {
             console.log("Move forwards");
             break;
         case "S":
-            velocity = velocity + VELOCITY <= VELOCITY_LIMIT ? velocity - VELOCITY : velocity;
+            velocity = Math.abs(velocity - VELOCITY) <= VELOCITY_LIMIT ? velocity - VELOCITY : velocity;
             console.log("Move backwards");
             break;
         case "A":
