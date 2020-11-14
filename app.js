@@ -8,6 +8,7 @@ let time = 0;
 
 const VELOCITY_LIMIT = 5;
 const WHEEL_TURN_LIMIT = 30;
+const NUMBER_OF_CUBES = 10;
 
 const CUBE = 0;
 const SPHERE = 1;
@@ -190,39 +191,16 @@ function fit_canvas_to_window() {
 }
 
 function drawFloor() {
-
-    // let vertices = [
-    //     vec3(-0.5, -0.5, +0.5),     // 0
-    //     vec3(+0.5, -0.5, +0.5),     // 1
-    //     vec3(+0.5, +0.5, +0.5),     // 2
-    //     vec3(-0.5, +0.5, +0.5),     // 3
-    //     vec3(-0.5, -0.5, -0.5),     // 4
-    //     vec3(+0.5, -0.5, -0.5),     // 5
-    //     vec3(+0.5, +0.5, -0.5),     // 6
-    //     vec3(-0.5, +0.5, -0.5)      // 7
-    // ];
-
-    for (let i = 0; i < 4; i++) {
-        for (let j = 0; j < 4; j++) {
-            multTranslation([0.5 * i, 0.0, 0.5 * j]);
+    for (let i = -NUMBER_OF_CUBES / 4; i < NUMBER_OF_CUBES / 4; i++) {
+        for (let j = -NUMBER_OF_CUBES / 4; j < NUMBER_OF_CUBES / 4; j++) {
+            pushMatrix();
+            multTranslation([i * (canvas.width / 4), -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, j * (canvas.width / 4)]);
+            multScale([canvas.width / 4, 0, canvas.width / 4]);
+            gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
+            drawPrimitive(CUBE);
+            popMatrix();
         }
-        drawPrimitive(CUBE);
     }
-
-    // gl.useProgram(program);
-
-    // gl.bindBuffer(gl.ARRAY_BUFFER, cube_points_buffer);
-    // var vPosition = gl.getAttribLocation(program, "vPosition");
-    // gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
-    // gl.enableVertexAttribArray(vPosition);
-
-    // gl.bindBuffer(gl.ARRAY_BUFFER, cube_normals_buffer);
-    // var vNormal = gl.getAttribLocation(program, "vNormal");
-    // gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, false, 0, 0);
-    // gl.enableVertexAttribArray(vNormal);
-
-    // gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cube_edges_buffer);
-    // gl.drawElements(gl.LINES, cube_edges.length, gl.UNSIGNED_BYTE, 0);
 }
 
 window.onresize = function () {
@@ -345,14 +323,7 @@ function calculateWheelRotation(dx) {
 }
 
 function sceneGraph() {
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, 0]);
-    multScale([canvas.width, 0, canvas.height]);
-    gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
     drawFloor();
-    popMatrix();
-
-    console.log(wheelRotation);
 
     // arch
     let engle = radians(-wheelRotation + currentRotationAngle);
@@ -485,7 +456,12 @@ function render() {
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection));
 
     setView();
+    // multScale([500, 500, 500]);
+    // multRotationX(time);
+    // multRotationX(90)
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+
+    // paraboloidDrawFilled(gl, program);
 
     sceneGraph();
 
