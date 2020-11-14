@@ -6,7 +6,7 @@ let aspect;
 
 let time = 0;
 
-const VP_DISTANCE = 900;
+const VP_DISTANCE = 600;
 const VELOCITY = 40;
 const VELOCITY_LIMIT = 10 * VELOCITY;
 const ARM_UPPER_LIMIT = 165;
@@ -22,6 +22,7 @@ const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
 const PARABOLOID = 3;
+const TORUS = 4;
 const WIREFRAME = 0;
 const FULL = 1;
 
@@ -58,7 +59,7 @@ let armRotationZ = 0;
 let armRotationY = 0;
 let wheelRotation = 0;
 let currentRotationAngle = 0;
-let camera = CUSTOM;
+let camera = LATERAL;
 
 let mProjection, modelView;
 
@@ -210,6 +211,7 @@ window.onload = function init() {
     sphereInit(gl);
     cylinderInit(gl);
     paraboloidInit(gl);
+    torusInit(gl);
 
     mModelViewLoc = gl.getUniformLocation(program, 'mModelView');
     mProjectionLoc = gl.getUniformLocation(program, 'mProjection');
@@ -234,6 +236,9 @@ function drawPrimitive(shape) {
         case PARABOLOID:
             paraboloidDrawWireFrame(gl, program);
             break;
+        case TORUS:
+            torusDrawWireFrame(gl, program);
+            break;
         default:
             break;
     }
@@ -256,14 +261,22 @@ function Front() {
 function Wheel() {
     wheelYRotation += calculateWheelRotation(velocity);
     multRotationY(-wheelYRotation * TIME);
-    multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
+    multScale([WHEEL_DIAMETER / 2, WHEEL_WIDTH, WHEEL_DIAMETER / 2]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
+function Tire() {
+    multRotationY(-wheelYRotation * TIME);
+    multScale([WHEEL_DIAMETER / 1.4, WHEEL_WIDTH * 2.5, WHEEL_DIAMETER / 1.4]);
+    gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
+    drawPrimitive(TORUS);
+    gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
+}
+
 function Axle() {
-    multScale([10, VAN_WIDTH + WHEEL_WIDTH, 10]);
+    multScale([10, VAN_WIDTH + WHEEL_WIDTH - 20, 10]);
     gl.uniform4fv(colorLoc, [0.0, 0.7, 0.7, 1.0]);
     drawPrimitive(CYLINDER);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
@@ -356,15 +369,30 @@ function sceneGraph() {
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
     multRotationZ(wheelRotation);
-
     Wheel();
     popMatrix();
+
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
+    multRotationX(90);
+    multRotationZ(wheelRotation);
+    Tire();
+    popMatrix();
+
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
+
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
+    multRotationX(90);
+    multRotationZ(wheelRotation);
+    Tire();
+    popMatrix();
+
     popMatrix();
     pushMatrix();
     multTranslation([-VAN_BOX_LENGTH / 4, 0, 0]);
@@ -378,11 +406,25 @@ function sceneGraph() {
     multRotationX(90);
     Wheel();
     popMatrix();
+
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
+    multRotationX(90);
+    Tire();
+    popMatrix();
+
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
     Wheel();
     popMatrix();
+
+    pushMatrix();
+    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
+    multRotationX(90);
+    Tire();
+    popMatrix();
+
     popMatrix();
     //TODO this translation can take the elements to the top of the van
     // and then other translations specific to the elements are done in their place
