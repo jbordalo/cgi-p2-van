@@ -16,6 +16,8 @@ const WHEEL_TURN_LIMIT = 30;
 const WHEEL_TURN_DELTA = 5;
 const NUMBER_OF_CUBES = 10;
 
+const TIME = 1 / 60;
+
 const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
@@ -253,7 +255,7 @@ function Front() {
 
 function Wheel() {
     wheelYRotation += calculateWheelRotation(velocity);
-    multRotationY(-wheelYRotation * (1 / 60));
+    multRotationY(-wheelYRotation * TIME);
     multScale([WHEEL_DIAMETER, WHEEL_WIDTH, WHEEL_DIAMETER]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
@@ -307,10 +309,10 @@ function calculateWheelRotation(dx) {
 function computeMovement() {
     // arch
     let angle = radians(-wheelRotation + currentRotationAngle);
-    let offsetX = velocity * Math.cos(-angle) * (1 / 60);
-    let offsetZ = velocity * Math.sin(-angle) * (1 / 60);
+    let offsetX = velocity * Math.cos(-angle) * TIME;
+    let offsetZ = velocity * Math.sin(-angle) * TIME;
 
-    let offset = velocity * (1 / 60);
+    let offset = velocity * TIME;
 
     let r = WHEELBASE / Math.tan(radians(-wheelRotation));
     let alpha = 0;
@@ -427,7 +429,7 @@ function setView() {
 }
 
 function render() {
-    time += 1 / 60;
+    time += TIME;
 
     gl.uniform1i(colorModeLoc, mode);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
