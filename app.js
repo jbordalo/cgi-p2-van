@@ -1,19 +1,19 @@
 /** @type {WebGLRenderingContext} */
-var gl;
+let gl;
 let program;
 let canvas;
 let aspect;
 
+const VP_DISTANCE = 400; // cm
+const VELOCITY = 1; // cm/frame
+const VELOCITY_LIMIT = 10 * VELOCITY; // cm/frame
 
-
-const VP_DISTANCE = 400; // cms
-const VELOCITY = 1; // cm per frame
-const VELOCITY_LIMIT = 10 * VELOCITY; // cm per frame
-const ARM_UPPER_LIMIT = 165; // degrees
-const ARM_LOWER_LIMIT = 0; // degrees
-const ARM_ROTATION_DELTA = 5; // degrees
-const WHEEL_TURN_LIMIT = 30; // degrees
-const WHEEL_TURN_DELTA = 5; // degrees
+// All measures in degrees
+const ARM_UPPER_LIMIT = 165;
+const ARM_LOWER_LIMIT = 0;
+const ARM_ROTATION_DELTA = 5;
+const WHEEL_TURN_LIMIT = 30;
+const WHEEL_TURN_DELTA = 5;
 const NUMBER_OF_CUBES = 10;
 
 const CUBE = 0;
@@ -27,8 +27,8 @@ const TOP = 1;
 const LATERAL = 2;
 const FRONT = 3;
 
-// cm
-const VAN_HEIGHT = 180; 
+// All measures in cm
+const VAN_HEIGHT = 180;
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
 const VAN_FRONT_LENGTH = 100;
@@ -41,7 +41,6 @@ const HORIZONTAL_ROD_LENGTH = 150;
 const WHEELBASE = VAN_BOX_LENGTH / 2;
 const FLOOR_LEVEL = -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5;
 
-
 let isSolid = false;
 let position = vec3(0, 0, 0);
 let velocity = 0;
@@ -49,21 +48,22 @@ let velocity = 0;
 let mProjectionLoc, mModelViewLoc;
 let colorModeLoc, colorLoc;
 
-let armRotationZ = 0; //degrees
-let armRotationY = 0; //degrees
-let steeringRotation = 0; //degrees
-let wheelRotation = 0; //degrees
+// All measures in degrees
+let armRotationZ = 0;
+let armRotationY = 0;
+let steeringRotation = 0;
+let wheelRotation = 0;
+let currentRotationAngle = 0;
 
-let currentRotationAngle = 0; //degrees
 let camera = CUSTOM;
 
 let mProjection, modelView;
 
-var matrixStack = [];
+let matrixStack = [];
 
 // Stack related operations
 function pushMatrix() {
-    var m = mat4(modelView[0], modelView[1],
+    let m = mat4(modelView[0], modelView[1],
         modelView[2], modelView[3]);
     matrixStack.push(m);
 }
@@ -425,7 +425,7 @@ function sceneGraph() {
         multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT - ANTENNA_DIAMETER/2, 0]);
         Antenna();
     popMatrix();
-    
+
     multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
     Support();
 }
