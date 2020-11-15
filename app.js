@@ -8,7 +8,7 @@ let time = 0;
 
 const VP_DISTANCE = 400; //cms
 const VELOCITY = 1; //??
-const VELOCITY_LIMIT = 10 * VELOCITY; 
+const VELOCITY_LIMIT = 10 * VELOCITY;
 const ARM_UPPER_LIMIT = 165; //degrees
 const ARM_LOWER_LIMIT = 0; //degrees
 const ARM_ROTATION_DELTA = 5; //degrees
@@ -29,12 +29,10 @@ const TOP = 1;
 const LATERAL = 2;
 const FRONT = 3;
 
-//cms
 const VAN_HEIGHT = 180;
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
-const VAN_COCKPIT = 100;
-const WHEEL_PLACEMENT = 90;
+const VAN_FRONT_LENGTH = 100;
 const WHEEL_DIAMETER = 60;
 const WHEEL_WIDTH = 25;
 const SUPPORT_DIAMETER = 10;
@@ -43,10 +41,8 @@ const ANTENNA_DIAMETER = 75;
 const HORIZONTAL_ROD_LENGTH = 150;
 const WHEELBASE = VAN_BOX_LENGTH / 2;
 const FLOOR_LEVEL = -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5;
-//cms
 
-
-let mode = false; //todo change mode to isSolid
+let isSolid = false;
 let position = vec3(0, 0, 0);
 let velocity = 0;
 
@@ -55,8 +51,8 @@ let colorModeLoc, colorLoc;
 
 let armRotationZ = 0; //degrees
 let armRotationY = 0; //degrees
+let steeringRotation = 0; //degrees
 let wheelRotation = 0; //degrees
-let wheelYRotation = 0; //degrees
 
 let currentRotationAngle = 0; //degrees
 let camera = CUSTOM;
@@ -114,7 +110,7 @@ document.addEventListener('keydown', e => {
             console.log("Custom view");
             break;
         case " ":
-            mode = !mode;
+            isSolid = !isSolid;
             console.log("Color change");
             break;
         case "W":
@@ -126,14 +122,14 @@ document.addEventListener('keydown', e => {
             console.log("Move backwards");
             break;
         case "A":
-            if (wheelRotation > -WHEEL_TURN_LIMIT) {
-                wheelRotation -= WHEEL_TURN_DELTA;
+            if (steeringRotation > -WHEEL_TURN_LIMIT) {
+                steeringRotation -= WHEEL_TURN_DELTA;
             }
             console.log("Steer left");
             break;
         case "D":
-            if (wheelRotation < WHEEL_TURN_LIMIT) {
-                wheelRotation += WHEEL_TURN_DELTA;
+            if (steeringRotation < WHEEL_TURN_LIMIT) {
+                steeringRotation += WHEEL_TURN_DELTA;
             }
             console.log("Steer right");
             break;
@@ -245,7 +241,7 @@ function drawPrimitive(shape) {
     }
 }
 
-function Chassis() {
+function Box() {
     multScale([VAN_BOX_LENGTH, VAN_HEIGHT, VAN_WIDTH]);
     gl.uniform4fv(colorLoc, [.9, .2, .6, 1.0]);
     drawPrimitive(CUBE);
@@ -253,14 +249,14 @@ function Chassis() {
 }
 
 function Front() {
-    multScale([VAN_COCKPIT, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
+    multScale([VAN_FRONT_LENGTH, 2 * VAN_HEIGHT / 3.0, VAN_WIDTH]);
     gl.uniform4fv(colorLoc, [.4, .5, .6, 1.0]);
     drawPrimitive(CUBE);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
 function Wheel() {
-    multRotationY(-wheelYRotation);
+    multRotationY(-wheelRotation);
     multScale([WHEEL_DIAMETER / 2, WHEEL_WIDTH, WHEEL_DIAMETER / 2]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
@@ -268,7 +264,7 @@ function Wheel() {
 }
 
 function Tire() {
-    multRotationY(-wheelYRotation);
+    multRotationY(-wheelRotation);
     multScale([WHEEL_DIAMETER / 1.4, WHEEL_WIDTH * 2.5, WHEEL_DIAMETER / 1.4]);
     gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
     drawPrimitive(TORUS);
@@ -314,18 +310,18 @@ function Antenna() {
 }
 
 function calculateWheelRotation(dx) {
-    return 360 * dx /(Math.PI*WHEEL_DIAMETER);
+    return 360 * dx / (Math.PI * WHEEL_DIAMETER);
 }
 
 function computeMovement() {
     // arch
-    let angle = radians(-wheelRotation + currentRotationAngle);
+    let angle = radians(-steeringRotation + currentRotationAngle);
     let offsetX = velocity * Math.cos(-angle);
     let offsetZ = velocity * Math.sin(-angle);
 
     let offset = velocity;
 
-    let r = WHEELBASE / Math.tan(radians(-wheelRotation));
+    let r = WHEELBASE / Math.tan(radians(-steeringRotation));
     let alpha = 0;
     if (r != Infinity) {
         alpha = (offset / r) * (180 / Math.PI);
@@ -346,18 +342,18 @@ function computeMovement() {
 function sceneGraph() {
     drawFloor();
 
-    wheelYRotation += calculateWheelRotation(velocity);
+    wheelRotation += calculateWheelRotation(velocity);
     computeMovement();
 
     pushMatrix();
-        Chassis();
+    Box();
     popMatrix();
     pushMatrix();
-        multTranslation([VAN_BOX_LENGTH / 2 + VAN_COCKPIT / 2, -VAN_HEIGHT / 3 + VAN_HEIGHT / 6, 0]);
-        Front();
+    multTranslation([VAN_BOX_LENGTH / 2 + VAN_FRONT_LENGTH / 2, -VAN_HEIGHT / 3 + VAN_HEIGHT / 6, 0]);
+    Front();
     popMatrix();
     pushMatrix();
-        multTranslation([0,-VAN_HEIGHT/2, 0]);
+    multTranslation([0, -VAN_HEIGHT / 2, 0]);
         pushMatrix();
             multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
 
@@ -368,7 +364,7 @@ function sceneGraph() {
             pushMatrix();
                 multTranslation([0, 0, -VAN_WIDTH / 2]);
                 multRotationX(90);
-                multRotationZ(wheelRotation);
+    multRotationZ(steeringRotation);
                 pushMatrix();
                     Wheel();
                 popMatrix();
@@ -380,7 +376,7 @@ function sceneGraph() {
             pushMatrix();
                 multTranslation([0, 0, VAN_WIDTH / 2]);
                 multRotationX(90);
-                multRotationZ(wheelRotation);
+    multRotationZ(steeringRotation);
                 pushMatrix()
                     Wheel();
                 popMatrix();
@@ -424,8 +420,6 @@ function sceneGraph() {
             popMatrix();
         popMatrix();
     popMatrix();
-    //TODO this translation can take the elements to the top of the van
-    // and then other translations specific to the elements are done in their place
     multTranslation([0, VAN_HEIGHT / 2 + SUPPPORT_HEIGHT / 2, 0]);
     pushMatrix();
         Support();
@@ -472,7 +466,7 @@ function setView() {
 function render() {
     time += TIME;
 
-    gl.uniform1i(colorModeLoc, mode);
+    gl.uniform1i(colorModeLoc, isSolid);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     var projection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
