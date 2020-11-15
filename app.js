@@ -6,7 +6,7 @@ let aspect;
 
 let time = 0;
 
-const VP_DISTANCE = 150; //cms
+const VP_DISTANCE = 400; //cms
 const VELOCITY = 1; //??
 const VELOCITY_LIMIT = 10 * VELOCITY; 
 const ARM_UPPER_LIMIT = 165; //degrees
@@ -42,6 +42,7 @@ const SUPPPORT_HEIGHT = 25;
 const ANTENNA_DIAMETER = 75;
 const HORIZONTAL_ROD_LENGTH = 150;
 const WHEELBASE = VAN_BOX_LENGTH / 2;
+const FLOOR_LEVEL = -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5;
 //cms
 
 
@@ -58,7 +59,7 @@ let wheelRotation = 0; //degrees
 let wheelYRotation = 0; //degrees
 
 let currentRotationAngle = 0; //degrees
-let camera = LATERAL;
+let camera = CUSTOM;
 
 let mProjection, modelView;
 
@@ -181,7 +182,7 @@ function drawFloor() {
     for (let i = -NUMBER_OF_CUBES / 4; i < NUMBER_OF_CUBES / 4; i++) {
         for (let j = -NUMBER_OF_CUBES / 4; j < NUMBER_OF_CUBES / 4; j++) {
             pushMatrix();
-            multTranslation([i * (canvas.width / 4), -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5, j * (canvas.width / 4)]);
+            multTranslation([i * (canvas.width / 4), FLOOR_LEVEL, j * (canvas.width / 4)]);
             multScale([canvas.width / 4, 10, canvas.width / 4]);
             gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
             drawPrimitive(CUBE);
@@ -343,112 +344,112 @@ function computeMovement() {
 }
 
 function sceneGraph() {
-    wheelYRotation += calculateWheelRotation(velocity);
     drawFloor();
 
+    wheelYRotation += calculateWheelRotation(velocity);
     computeMovement();
 
     pushMatrix();
-    Chassis();
+        Chassis();
     popMatrix();
     pushMatrix();
-    multTranslation([VAN_BOX_LENGTH / 2 + VAN_COCKPIT / 2, -VAN_HEIGHT / 3 + VAN_HEIGHT / 6, 0]);
-    Front();
+        multTranslation([VAN_BOX_LENGTH / 2 + VAN_COCKPIT / 2, -VAN_HEIGHT / 3 + VAN_HEIGHT / 6, 0]);
+        Front();
     popMatrix();
     pushMatrix();
-    multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
+        multTranslation([0,-VAN_HEIGHT/2, 0]);
+        pushMatrix();
+            multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, 0]);
-    multRotationX(90);
-    Axle();
-    popMatrix();
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
-    multRotationX(90);
-    multRotationZ(wheelRotation);
-    Wheel();
-    popMatrix();
+            pushMatrix();
+                multRotationX(90);
+                Axle();
+            popMatrix();
+            pushMatrix();
+                multTranslation([0, 0, -VAN_WIDTH / 2]);
+                multRotationX(90);
+                multRotationZ(wheelRotation);
+                pushMatrix();
+                    Wheel();
+                popMatrix();
+                pushMatrix();
+                    Tire();
+                popMatrix();
+            popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
-    multRotationX(90);
-    multRotationZ(wheelRotation);
-    Tire();
-    popMatrix();
+            pushMatrix();
+                multTranslation([0, 0, VAN_WIDTH / 2]);
+                multRotationX(90);
+                multRotationZ(wheelRotation);
+                pushMatrix()
+                    Wheel();
+                popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
-    multRotationX(90);
-    multRotationZ(wheelRotation);
-    Wheel();
-    popMatrix();
+                pushMatrix();
+                    Tire();
+                popMatrix();
+            popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
-    multRotationX(90);
-    multRotationZ(wheelRotation);
-    Tire();
-    popMatrix();
+        popMatrix();
+        pushMatrix();
+            multTranslation([-VAN_BOX_LENGTH / 4, 0, 0]);
+            pushMatrix();
+                multTranslation([0, 0, 0]);
+                multRotationX(90);
+                Axle();
+            popMatrix();
 
-    popMatrix();
-    pushMatrix();
-    multTranslation([-VAN_BOX_LENGTH / 4, 0, 0]);
-    pushMatrix();
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, 0]);
-    multRotationX(90);
-    Axle();
-    popMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
-    multRotationX(90);
-    Wheel();
-    popMatrix();
+            pushMatrix();
+                multTranslation([0, 0, VAN_WIDTH / 2]);
+                multRotationX(90);
+                pushMatrix()
+                    Wheel();
+                popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
-    multRotationX(90);
-    Tire();
-    popMatrix();
+                pushMatrix();
+                    Tire();
+                popMatrix();
+            popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
-    multRotationX(90);
-    Wheel();
-    popMatrix();
+            pushMatrix();
+                multTranslation([0, 0, -VAN_WIDTH / 2]);
+                multRotationX(90);
+                pushMatrix();
+                    Wheel();
+                popMatrix();
 
-    pushMatrix();
-    multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
-    multRotationX(90);
-    Tire();
-    popMatrix();
-
+                pushMatrix();
+                    Tire();
+                popMatrix();
+            popMatrix();
+        popMatrix();
     popMatrix();
     //TODO this translation can take the elements to the top of the van
     // and then other translations specific to the elements are done in their place
     multTranslation([0, VAN_HEIGHT / 2 + SUPPPORT_HEIGHT / 2, 0]);
     pushMatrix();
-    Support();
+        Support();
     popMatrix();
     multTranslation([0, SUPPPORT_HEIGHT / 2, 0]);
     multRotationY(armRotationY);
     multRotationZ(armRotationZ);
     pushMatrix();
-    Elbow();
+        Elbow();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH / 2, 0, 0]);
-    Arm();
+        multTranslation([HORIZONTAL_ROD_LENGTH / 2, 0, 0]);
+        Arm();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT, 0]);
-    Antenna();
+        multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT, 0]);
+        Antenna();
     popMatrix();
     pushMatrix();
-    multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
-    Support();
+        multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
+        Support();
     popMatrix();
-    popMatrix();
+popMatrix();
+
 }
 
 function setView() {
