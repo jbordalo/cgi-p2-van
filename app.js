@@ -4,19 +4,17 @@ let program;
 let canvas;
 let aspect;
 
-let time = 0;
 
-const VP_DISTANCE = 400; //cms
-const VELOCITY = 1; //??
-const VELOCITY_LIMIT = 10 * VELOCITY;
-const ARM_UPPER_LIMIT = 165; //degrees
-const ARM_LOWER_LIMIT = 0; //degrees
-const ARM_ROTATION_DELTA = 5; //degrees
-const WHEEL_TURN_LIMIT = 30; //degrees
-const WHEEL_TURN_DELTA = 5; //degrees
+
+const VP_DISTANCE = 400; // cms
+const VELOCITY = 1; // cm per frame
+const VELOCITY_LIMIT = 10 * VELOCITY; // cm per frame
+const ARM_UPPER_LIMIT = 165; // degrees
+const ARM_LOWER_LIMIT = 0; // degrees
+const ARM_ROTATION_DELTA = 5; // degrees
+const WHEEL_TURN_LIMIT = 30; // degrees
+const WHEEL_TURN_DELTA = 5; // degrees
 const NUMBER_OF_CUBES = 10;
-
-const TIME = 1 / 60; // seconds per frame
 
 const CUBE = 0;
 const SPHERE = 1;
@@ -29,7 +27,8 @@ const TOP = 1;
 const LATERAL = 2;
 const FRONT = 3;
 
-const VAN_HEIGHT = 180;
+// cm
+const VAN_HEIGHT = 180; 
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
 const VAN_FRONT_LENGTH = 100;
@@ -41,6 +40,7 @@ const ANTENNA_DIAMETER = 75;
 const HORIZONTAL_ROD_LENGTH = 150;
 const WHEELBASE = VAN_BOX_LENGTH / 2;
 const FLOOR_LEVEL = -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5;
+
 
 let isSolid = false;
 let position = vec3(0, 0, 0);
@@ -333,7 +333,6 @@ function computeMovement() {
 
     multTranslation(position);
 
-    multTranslation
     multRotationY(currentRotationAngle);
 }
 
@@ -354,7 +353,6 @@ function sceneGraph() {
     multTranslation([0, -VAN_HEIGHT / 2, 0]);
         pushMatrix();
             multTranslation([VAN_BOX_LENGTH / 4, 0, 0]);
-
             pushMatrix();
                 multRotationX(90);
                 Axle();
@@ -362,27 +360,23 @@ function sceneGraph() {
             pushMatrix();
                 multTranslation([0, 0, -VAN_WIDTH / 2]);
                 multRotationX(90);
-    multRotationZ(steeringRotation);
+                multRotationZ(steeringRotation);
                 pushMatrix();
                     Wheel();
                 popMatrix();
-                pushMatrix();
-                    Tire();
-                popMatrix();
+               
+                Tire();
+                
             popMatrix();
 
-            pushMatrix();
-                multTranslation([0, 0, VAN_WIDTH / 2]);
-                multRotationX(90);
-    multRotationZ(steeringRotation);
-                pushMatrix()
-                    Wheel();
-                popMatrix();
-
-                pushMatrix();
-                    Tire();
-                popMatrix();
+            multTranslation([0, 0, VAN_WIDTH / 2]);
+            multRotationX(90);
+            multRotationZ(steeringRotation);
+            pushMatrix()
+                Wheel();
             popMatrix();
+
+            Tire();
 
         popMatrix();
         pushMatrix();
@@ -399,24 +393,20 @@ function sceneGraph() {
                     Wheel();
                 popMatrix();
 
-                pushMatrix();
-                    Tire();
-                popMatrix();
+                Tire();
+                
             popMatrix();
-
+            
+            multTranslation([0, 0, -VAN_WIDTH / 2]);
+            multRotationX(90);
             pushMatrix();
-                multTranslation([0, 0, -VAN_WIDTH / 2]);
-                multRotationX(90);
-                pushMatrix();
-                    Wheel();
-                popMatrix();
-
-                pushMatrix();
-                    Tire();
-                popMatrix();
+                Wheel();
             popMatrix();
+
+            Tire();
         popMatrix();
     popMatrix();
+
     multTranslation([0, VAN_HEIGHT / 2 + SUPPPORT_HEIGHT / 2, 0]);
     pushMatrix();
         Support();
@@ -435,12 +425,9 @@ function sceneGraph() {
         multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT - ANTENNA_DIAMETER/2, 0]);
         Antenna();
     popMatrix();
-    pushMatrix();
-        multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
-        Support();
-    popMatrix();
-popMatrix();
-
+    
+    multTranslation([HORIZONTAL_ROD_LENGTH, 0, 0]);
+    Support();
 }
 
 function setView() {
@@ -461,7 +448,6 @@ function setView() {
 }
 
 function render() {
-    time += TIME;
 
     gl.uniform1i(colorModeLoc, isSolid);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -471,12 +457,7 @@ function render() {
     gl.uniformMatrix4fv(mProjectionLoc, false, flatten(projection)); 0
 
     setView();
-    // multScale([500, 500, 500]);
-    // multRotationX(time);
-    // multRotationX(90)
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
-
-    // paraboloidDrawFilled(gl, program);
 
     sceneGraph();
 
