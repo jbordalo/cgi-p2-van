@@ -259,6 +259,7 @@ function Front() {
 }
 
 function Wheel() {
+    multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER / 2, WHEEL_WIDTH, WHEEL_DIAMETER / 2]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
@@ -266,6 +267,7 @@ function Wheel() {
 }
 
 function Tire() {
+    multRotationY(-wheelYRotation);
     multScale([WHEEL_DIAMETER / 1.4, WHEEL_WIDTH * 2.5, WHEEL_DIAMETER / 1.4]);
     gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
     drawPrimitive(TORUS);
@@ -341,6 +343,7 @@ function computeMovement() {
 }
 
 function sceneGraph() {
+    wheelYRotation += calculateWheelRotation(velocity);
     drawFloor();
 
     computeMovement();
@@ -363,8 +366,6 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
-    wheelYRotation += calculateWheelRotation(velocity);
-    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
@@ -372,7 +373,6 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Tire();
     popMatrix();
@@ -380,7 +380,6 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
@@ -388,7 +387,6 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Tire();
     popMatrix();
@@ -400,33 +398,28 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     Axle();
     popMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     Wheel();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     Tire();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     Wheel();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
-    multRotationY(-wheelYRotation);
     Tire();
     popMatrix();
 
