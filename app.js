@@ -6,31 +6,30 @@ let aspect;
 
 let time = 0;
 
-const VP_DISTANCE = 600;
-const VELOCITY = 40;
-const VELOCITY_LIMIT = 10 * VELOCITY;
-const ARM_UPPER_LIMIT = 165;
-const ARM_LOWER_LIMIT = 0;
-const ARM_ROTATION_DELTA = 5;
-const WHEEL_TURN_LIMIT = 30;
-const WHEEL_TURN_DELTA = 5;
+const VP_DISTANCE = 150; //cms
+const VELOCITY = 1; //??
+const VELOCITY_LIMIT = 10 * VELOCITY; 
+const ARM_UPPER_LIMIT = 165; //degrees
+const ARM_LOWER_LIMIT = 0; //degrees
+const ARM_ROTATION_DELTA = 5; //degrees
+const WHEEL_TURN_LIMIT = 30; //degrees
+const WHEEL_TURN_DELTA = 5; //degrees
 const NUMBER_OF_CUBES = 10;
 
-const TIME = 1 / 60;
+const TIME = 1 / 60; // seconds per frame
 
 const CUBE = 0;
 const SPHERE = 1;
 const CYLINDER = 2;
 const PARABOLOID = 3;
 const TORUS = 4;
-const WIREFRAME = 0;
-const FULL = 1;
 
 const CUSTOM = 0;
 const TOP = 1;
 const LATERAL = 2;
 const FRONT = 3;
 
+//cms
 const VAN_HEIGHT = 180;
 const VAN_WIDTH = 160;
 const VAN_BOX_LENGTH = 300;
@@ -43,22 +42,22 @@ const SUPPPORT_HEIGHT = 25;
 const ANTENNA_DIAMETER = 75;
 const HORIZONTAL_ROD_LENGTH = 150;
 const WHEELBASE = VAN_BOX_LENGTH / 2;
+//cms
 
-let currentMode = WIREFRAME;
-let mode = false;
+
+let mode = false; //todo change mode to isSolid
 let position = vec3(0, 0, 0);
 let velocity = 0;
-let acceleration = vec3(0, 0, 0);
-
-let wheelYRotation = 0;
 
 let mProjectionLoc, mModelViewLoc;
 let colorModeLoc, colorLoc;
 
-let armRotationZ = 0;
-let armRotationY = 0;
-let wheelRotation = 0;
-let currentRotationAngle = 0;
+let armRotationZ = 0; //degrees
+let armRotationY = 0; //degrees
+let wheelRotation = 0; //degrees
+let wheelYRotation = 0; //degrees
+
+let currentRotationAngle = 0; //degrees
 let camera = LATERAL;
 
 let mProjection, modelView;
@@ -155,10 +154,12 @@ document.addEventListener('keydown', e => {
             break;
         case "J":
             armRotationY += ARM_ROTATION_DELTA;
+            armRotationY %= 360;
             console.log("Rotate arm left");
             break;
         case "L":
             armRotationY -= ARM_ROTATION_DELTA;
+            armRotationY %= 360;
             console.log("Rotate arm right");
             break;
         default:
@@ -173,15 +174,15 @@ function fit_canvas_to_window() {
 
     aspect = canvas.width / canvas.height;
     gl.viewport(0, 0, canvas.width, canvas.height);
-
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
 }
 
 function drawFloor() {
     for (let i = -NUMBER_OF_CUBES / 4; i < NUMBER_OF_CUBES / 4; i++) {
         for (let j = -NUMBER_OF_CUBES / 4; j < NUMBER_OF_CUBES / 4; j++) {
             pushMatrix();
-            multTranslation([i * (canvas.width / 4), -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2, j * (canvas.width / 4)]);
-            multScale([canvas.width / 4, 0, canvas.width / 4]);
+            multTranslation([i * (canvas.width / 4), -VAN_HEIGHT / 2 - WHEEL_DIAMETER / 2 - 5, j * (canvas.width / 4)]);
+            multScale([canvas.width / 4, 10, canvas.width / 4]);
             gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
             drawPrimitive(CUBE);
             popMatrix();
@@ -200,7 +201,6 @@ window.onload = function init() {
 
     // Configure WebGL
     fit_canvas_to_window();
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
     // Load shaders and initialize attribute buffers
@@ -259,8 +259,6 @@ function Front() {
 }
 
 function Wheel() {
-    wheelYRotation += calculateWheelRotation(velocity);
-    multRotationY(-wheelYRotation * TIME);
     multScale([WHEEL_DIAMETER / 2, WHEEL_WIDTH, WHEEL_DIAMETER / 2]);
     gl.uniform4fv(colorLoc, [1.0, 0.0, 1.0, 1.0]);
     drawPrimitive(CYLINDER);
@@ -268,7 +266,6 @@ function Wheel() {
 }
 
 function Tire() {
-    multRotationY(-wheelYRotation * TIME);
     multScale([WHEEL_DIAMETER / 1.4, WHEEL_WIDTH * 2.5, WHEEL_DIAMETER / 1.4]);
     gl.uniform4fv(colorLoc, [1.0, 1.0, 1.0, 1.0]);
     drawPrimitive(TORUS);
@@ -292,7 +289,7 @@ function Support() {
 function Elbow() {
     multScale([SUPPORT_DIAMETER, SUPPORT_DIAMETER, SUPPORT_DIAMETER]);
     gl.uniform4fv(colorLoc, [.6, .0, .9, 1.0]);
-    drawPrimitive(SPHERE, currentMode);
+    drawPrimitive(SPHERE);
     gl.uniformMatrix4fv(mModelViewLoc, false, flatten(modelView));
 }
 
@@ -314,18 +311,16 @@ function Antenna() {
 }
 
 function calculateWheelRotation(dx) {
-    // alfa = length / r;
-    const r = WHEEL_DIAMETER / 2;
-    return dx * Math.PI / r;
+    return 360 * dx /(Math.PI*WHEEL_DIAMETER);
 }
 
 function computeMovement() {
     // arch
     let angle = radians(-wheelRotation + currentRotationAngle);
-    let offsetX = velocity * Math.cos(-angle) * TIME;
-    let offsetZ = velocity * Math.sin(-angle) * TIME;
+    let offsetX = velocity * Math.cos(-angle);
+    let offsetZ = velocity * Math.sin(-angle);
 
-    let offset = velocity * TIME;
+    let offset = velocity;
 
     let r = WHEELBASE / Math.tan(radians(-wheelRotation));
     let alpha = 0;
@@ -368,6 +363,8 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
+    wheelYRotation += calculateWheelRotation(velocity);
+    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
@@ -375,6 +372,7 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Tire();
     popMatrix();
@@ -382,6 +380,7 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Wheel();
     popMatrix();
@@ -389,6 +388,7 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     multRotationZ(wheelRotation);
     Tire();
     popMatrix();
@@ -400,28 +400,33 @@ function sceneGraph() {
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, 0]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     Axle();
     popMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     Wheel();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     Tire();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     Wheel();
     popMatrix();
 
     pushMatrix();
     multTranslation([0, -VAN_HEIGHT / 2, -VAN_WIDTH / 2]);
     multRotationX(90);
+    multRotationY(-wheelYRotation);
     Tire();
     popMatrix();
 
