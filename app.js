@@ -301,8 +301,6 @@ function Arm() {
 }
 
 function Antenna() {
-    // multRotationX(time);
-    multTranslation([0, -40, 0]);
     multScale([ANTENNA_DIAMETER, ANTENNA_DIAMETER, ANTENNA_DIAMETER]);
     gl.uniform4fv(colorLoc, [.5, .0, .5, 1.0]);
     drawPrimitive(PARABOLOID);
@@ -390,7 +388,6 @@ function sceneGraph() {
         pushMatrix();
             multTranslation([-VAN_BOX_LENGTH / 4, 0, 0]);
             pushMatrix();
-                multTranslation([0, 0, 0]);
                 multRotationX(90);
                 Axle();
             popMatrix();
@@ -435,7 +432,7 @@ function sceneGraph() {
         Arm();
     popMatrix();
     pushMatrix();
-        multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT, 0]);
+        multTranslation([HORIZONTAL_ROD_LENGTH, 2 * SUPPPORT_HEIGHT - ANTENNA_DIAMETER/2, 0]);
         Antenna();
     popMatrix();
     pushMatrix();
